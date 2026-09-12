@@ -1,0 +1,19 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "ethers-rpc-proxy",
+    "main": "src/worker.js",
+    "compatibility_date": "2026-08-01",
+    "vars": {
+        // 请求级自定义上游 RPC（POST /api/rpc、/api/contract/call、GET /api/call 的 rpc 参数）。
+        // 公共实例保持 "false" 防被当开放代理滥用；自建实例改 "true" 后，
+        // 任何 EVM 链填上自己的 RPC 即可只读对接（方法白名单/view-only 门禁照常生效）
+        "ALLOW_CUSTOM_RPC": "false"
+    },
+    // 静态资源（落地页）走 Workers Assets，命中文件直接返回，其余进 worker
+    "assets": {
+        "directory": "./public"
+    },
+    "observability": {
+        "enabled": true
+    }
+}

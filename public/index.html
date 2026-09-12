@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="title">Ethers RPC Proxy · Read-Only Multi-Chain RPC Relay</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e; --accent: #3fb950;
+    --get: #3fb950; --post: #d29922; --code-bg: #0a0d12;
+    --sidebar-w: 250px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text); margin: 0; line-height: 1.65;
+  }
+  .layout { display: grid; grid-template-columns: var(--sidebar-w) 1fr; max-width: 1180px; margin: 0 auto; }
+  /* 左侧导航 */
+  nav {
+    border-right: 1px solid var(--border); padding: 32px 8px 48px 20px;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; font-size: .9rem;
+  }
+  nav .brand { font-weight: 700; margin-bottom: 4px; }
+  nav .brand .pill {
+    background: rgba(63,185,80,.12); color: var(--get); border: 1px solid rgba(63,185,80,.4);
+    border-radius: 999px; padding: 0 8px; font-size: .7rem; margin-left: 6px; vertical-align: middle;
+  }
+  nav .group { color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; margin: 22px 0 6px; padding-left: 8px; }
+  nav a {
+    display: block; color: var(--text); text-decoration: none; padding: 6px 8px;
+    border-radius: 6px; border-left: 2px solid transparent;
+  }
+  nav a:hover { background: var(--panel); }
+  nav a.active { background: var(--panel); border-left-color: var(--get); }
+  nav a .d { display: block; color: var(--muted); font-size: .76rem; line-height: 1.4; }
+  nav a .m { font-family: ui-monospace, monospace; font-size: .8rem; }
+  /* 主区 */
+  main { padding: 40px 28px 80px; min-width: 0; }
+  h1 { font-size: 1.7rem; margin: 0 0 8px; letter-spacing: -0.5px; }
+  .tagline { color: var(--muted); margin: 0 0 12px; }
+  .badges span {
+    display: inline-block; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 6px; padding: 2px 10px; font-size: .78rem; color: var(--muted); margin: 2px 4px 2px 0;
+  }
+  .lang-switch {
+    position: absolute; top: 18px; right: 28px; display: inline-flex;
+    border: 1px solid var(--border); border-radius: 6px; overflow: hidden; font-size: .8rem;
+  }
+  .lang-switch button { border: none; border-radius: 0; padding: 5px 12px; background: #21262d; }
+  .lang-switch .gh { display: inline-flex; align-items: center; margin-left: 8px; color: var(--muted); }
+  .lang-switch .gh:hover { color: var(--fg); }
+  .lang-switch button.on { background: rgba(63,185,80,.18); color: var(--get); font-weight: 600; }
+  h2 { font-size: 1.2rem; margin: 44px 0 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h2 .sub { color: var(--muted); font-weight: 400; font-size: .85rem; margin-left: 8px; }
+  section { scroll-margin-top: 12px; }
+  /* 调用表单 */
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 20px 22px; margin-bottom: 16px;
+  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid .full { grid-column: 1 / -1; }
+  label { display: block; font-size: .84rem; color: var(--muted); margin-bottom: 4px; }
+  label b { color: var(--text); font-weight: 600; }
+  input, select {
+    width: 100%; background: var(--code-bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-size: .9rem;
+    font-family: ui-monospace, monospace;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--get); }
+  input::placeholder { color: #484f58; }
+  .hint { font-size: .76rem; color: var(--muted); margin-top: 3px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+  button {
+    background: #21262d; color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 7px 16px; font-size: .86rem; cursor: pointer;
+  }
+  button:hover { border-color: #8b949e; }
+  button.primary { background: rgba(63,185,80,.15); color: var(--get); border-color: var(--get); font-weight: 600; }
+  button.preset { font-size: .8rem; padding: 4px 12px; }
+  /* GET/POST 模式切换 */
+  .mode-switch { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .mode-switch button { border: none; border-radius: 0; font-size: .8rem; padding: 7px 12px; background: #21262d; }
+  .mode-switch button.on { background: rgba(63,185,80,.18); color: var(--get); font-weight: 600; }
+  /* 术语速查（默认折叠） */
+  details.glossary {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 18px; margin: 20px 0 0; font-size: .9rem;
+  }
+  details.glossary summary { cursor: pointer; color: var(--muted); user-select: none; }
+  details.glossary summary:hover { color: var(--text); }
+  details.glossary dl { margin: 14px 0 4px; display: grid; grid-template-columns: 150px 1fr; gap: 10px 14px; }
+  details.glossary dt { color: var(--get); font-weight: 600; font-family: ui-monospace, monospace; font-size: .84rem; }
+  details.glossary dd { margin: 0; color: var(--text); }
+  details.glossary dd .x { color: var(--muted); }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px; overflow-x: auto; font-size: .82rem; margin: 0 0 10px; color: #c9d1d9;
+  }
+  pre .c { color: var(--muted); }
+  .out {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px; font-size: .8rem; font-family: ui-monospace, monospace;
+    white-space: pre-wrap; word-break: break-all; color: #79c0ff; display: none; margin-top: 12px;
+  }
+  .out.err { color: #f85149; }
+  .method {
+    display: inline-block; font-family: ui-monospace, monospace; font-weight: 700;
+    font-size: .72rem; border-radius: 4px; padding: 1px 8px; margin-right: 8px; vertical-align: middle;
+  }
+  .method.get { color: var(--get); border: 1px solid var(--get); }
+  .method.post { color: var(--post); border: 1px solid var(--post); }
+  .card h3 { margin: 0 0 6px; font-size: .98rem; font-family: ui-monospace, monospace; }
+  .card p { margin: 0 0 10px; color: var(--muted); font-size: .9rem; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { border: 1px solid var(--border); padding: 6px 12px; text-align: left; font-size: .86rem; }
+  th { color: var(--muted); font-weight: 600; }
+  footer { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 56px; }
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; }
+    nav { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 16px 20px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .lang-switch { position: static; margin-bottom: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="nav">
+  <div class="brand">Ethers RPC Proxy<span class="pill" data-i18n="pill-ro">Read-only</span></div>
+  <div style="color:var(--muted);font-size:.78rem;padding:0 8px;" data-i18n="nav-sub">Multi-chain EVM read-only relay · Cloudflare Workers</div>
+  <div class="group" data-i18n="g-core">Core Flow</div>
+  <a href="#playground"><span class="m" data-i18n="nav-pg">Quick Call</span><span class="d" data-i18n="nav-pg-d">Pick chain → contract → method → read, e.g. query a token balance</span></a>
+  <div class="group" data-i18n="g-contract">Contract Reads · Core</div>
+  <a href="#ep-call"><span class="m"><span class="method get" style="padding:0 5px;">GET</span>/api/call</span><span class="d" data-i18n="nav-call-d">Shareable link, best for manual testing (preferred)</span></a>
+  <a href="#ep-contract-call"><span class="m"><span class="method post" style="padding:0 5px;">POST</span>/api/contract/call</span><span class="d" data-i18n="nav-cc-d">Best for programmatic calls, supports 0x addresses</span></a>
+  <div class="group" data-i18n="g-rpc">Generic RPC · Fallback</div>
+  <a href="#ep-rpc"><span class="m"><span class="method post" style="padding:0 5px;">POST</span>/api/rpc</span><span class="d" data-i18n="nav-rpc-d">Raw eth_ methods (balance / blocks / logs)</span></a>
+  <div class="group" data-i18n="g-meta">Auxiliary Metadata</div>
+  <a href="#ep-functions"><span class="m"><span class="method get" style="padding:0 5px;">GET</span>/contracts/:name/functions</span><span class="d" data-i18n="nav-fn-d">Function list, powers dynamic forms</span></a>
+  <a href="#ep-addresses"><span class="m"><span class="method get" style="padding:0 5px;">GET</span>/api/addresses</span><span class="d" data-i18n="nav-addr-d">Contract address book</span></a>
+  <a href="#ep-chains"><span class="m"><span class="method get" style="padding:0 5px;">GET</span>/api/chains</span><span class="d" data-i18n="nav-chains-d">Chain whitelist, fetch once on startup</span></a>
+  <a href="#ep-contracts"><span class="m"><span class="method get" style="padding:0 5px;">GET</span>/api/contracts</span><span class="d" data-i18n="nav-contracts-d">Built-in ABI list</span></a>
+  <a href="#ep-health"><span class="m"><span class="method get" style="padding:0 5px;">GET</span>/api/health</span><span class="d" data-i18n="nav-health-d">Health check, for monitoring</span></a>
+  <div class="group" data-i18n="g-ref">Reference</div>
+  <a href="#status"><span class="m" data-i18n="nav-status">Status Codes</span><span class="d">200 / 400 / 403 / 404 / 502</span></a>
+</nav>
+
+<main>
+<header style="position:relative;">
+  <div class="lang-switch"><button id="lang-en" class="on">EN</button><button id="lang-zh">中文</button><a class="gh" href="https://github.com/SweepPay/ethers-rpc-proxy" target="_blank" rel="noopener" title="GitHub"><svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a></div>
+  <h1 data-i18n="h1">Read-Only Multi-Chain RPC Relay</h1>
+  <p class="tagline" data-i18n="tagline">Unified RPC access + ABI-decoded contract reads + a built-in address book of common contracts. Never broadcasts transactions, never touches private keys — signing and broadcasting always happen in the client-side wallet.</p>
+  <div class="badges"><span data-i18n="b1">21 whitelisted chains</span><span data-i18n="b2">10 contract ABIs</span><span data-i18n="b3">Multi-node auto failover</span><span data-i18n="b4">CORS wide open</span><span data-i18n="b5">Runs on free tier</span></div>
+</header>
+
+<details class="glossary">
+  <summary data-i18n="gl-summary">🧭 New to blockchain terms? Open for a 30-second beginner explainer</summary>
+  <dl>
+    <dt data-i18n="gl-dt1">Chain ID / name</dt>
+    <dd data-i18n="gl-dd1">≈ <b>a LAN (local network)</b> — Ethereum, BSC, Polygon are independent LANs; address formats look alike but the networks don't interconnect. Pick which network to enter before calling.</dd>
+    <dt data-i18n="gl-dt2">Contract address / name</dt>
+    <dd data-i18n="gl-dd2">≈ <b>an IP address</b> — every contract on every chain has a unique 0x address. Address-book names (like <b>usdc</b>) are memorable "domain names" this service resolves to the right address per chain.</dd>
+    <dt data-i18n="gl-dt3">Method</dt>
+    <dd data-i18n="gl-dd3">≈ <b>an API endpoint</b> — contracts expose functions, split into reads (balance, config) and writes (transfer, approve). <span class="x">This project is a focused specialization: reads only, making "web2 frontend reads blockchain directly" fast, easy and cheap.</span></dd>
+    <dt data-i18n="gl-dt4">Why read-only?</dt>
+    <dd data-i18n="gl-dd4">Writes require a private-key signature, and that must happen in your own browser wallet (e.g. MetaMask). This service is a read-only gateway: fast, free, and structurally incapable of touching your assets.</dd>
+  </dl>
+</details>
+
+<!-- ============ 核心流程：交互式调用 ============ -->
+<section id="playground">
+  <h2 data-i18n-h="pg-h2">Quick Call<span class="sub">Chain (ID or name) → contract (name or 0x address) → method → read, producing a shareable GET link</span></h2>
+  <div class="card">
+    <div class="row" style="margin:0 0 14px;">
+      <span style="color:var(--muted);font-size:.84rem;" data-i18n="presets-label">Common examples:</span>
+      <button class="preset" data-preset='{"chain":"1","contract":"usdc","fn":"balanceOf"}' data-i18n="preset1">USDC balance</button>
+      <button class="preset" data-preset='{"chain":"56","contract":"weth","fn":"symbol"}' data-i18n="preset2">BSC · WBNB symbol</button>
+      <button class="preset" data-preset='{"chain":"137","contract":"weth","fn":"decimals"}' data-i18n="preset3">Polygon · WPOL decimals</button>
+      <button class="preset" data-preset='{"chain":"1","contract":"multicall3","fn":"getCurrentBlockTimestamp"}' data-i18n="preset4">Multicall3 block timestamp</button>
+    </div>
+    <div class="form-grid">
+      <div>
+        <label data-i18n-h="l-chain"><b>Chain</b> (chainId or name, e.g. 56 / bsc / polygon)</label>
+        <input id="f-chain" list="dl-chains" placeholder="56">
+        <datalist id="dl-chains"></datalist>
+        <div class="hint" id="f-chain-hint"></div>
+      </div>
+      <div>
+        <label data-i18n-h="l-contract"><b>Contract</b> (address-book name like usdc / weth, or a 0x address)</label>
+        <input id="f-contract" list="dl-contracts" placeholder="usdc or 0x…">
+        <div class="hint" id="f-contract-hint"></div>
+      </div>
+      <div id="f-abi-wrap" style="display:none;">
+        <label data-i18n-h="l-abi"><b>ABI</b> (required when entering a 0x address)</label>
+        <select id="f-abi"><option value="">— Select ABI —</option></select>
+        <div class="hint" data-i18n="l-abi-hint">Address-book names auto-match their ABI</div>
+      </div>
+      <div>
+        <label data-i18n-h="l-fn"><b>Method</b> (view/pure functions of the ABI are listed automatically)</label>
+        <select id="f-fn"><option value="">— Pick a contract first —</option></select>
+      </div>
+      <div class="full" id="f-params">
+        <label data-i18n-h="l-params"><b>Params</b></label>
+        <div id="f-params-box"><div class="hint" data-i18n="params-empty">Inputs are generated from the method's arguments</div></div>
+      </div>
+    </div>
+    <div class="row">
+      <span class="mode-switch">
+        <button id="mode-get" class="mode on">GET /api/call</button><button id="mode-post" class="mode">POST /api/contract/call</button>
+      </span>
+      <button class="primary" id="f-run" data-i18n="run">▶ Run read</button>
+      <span class="hint" id="f-curl-hint" style="margin:0;"></span>
+    </div>
+    <pre id="f-curl" style="display:none; margin-top:12px;"></pre>
+    <div class="out" id="f-out"></div>
+  </div>
+</section>
+
+<!-- ============ 合约读调用：核心接口 ============ -->
+<section id="endpoints-call">
+  <h2 data-i18n-h="h2-call">Contract Reads<span class="sub">Core endpoints: two forms of the same thing, GET preferred</span></h2>
+
+  <div class="card" id="ep-call">
+    <h3><span class="method get">GET</span>/api/call</h3>
+    <p data-i18n-h="p-call">GET version of the contract read call, same read-only pipeline as POST /api/contract/call. <b>chain</b> accepts a chainId or chain name; <b>contract</b> accepts an address-book name (0x addresses need the POST version with an explicit ABI); arguments are passed as repeated <b>p</b> params in order. The Quick Call form above uses this endpoint.</p>
+<pre><span class="c" data-i18n="c1"># Query vitalik's USDC balance</span>
+curl 'https://&lt;your-worker&gt;/api/call?chain=1&amp;contract=usdc&amp;fn=balanceOf&amp;p=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+
+<span class="c" data-i18n="c2"># Chain can also be a name; param types are inferred</span>
+curl 'https://&lt;your-worker&gt;/api/call?chain=bsc&amp;contract=weth&amp;fn=symbol'</pre>
+    <div class="row"><button class="primary" data-run="/api/call?chain=1&contract=usdc&fn=decimals">▶ USDC decimals</button>
+      <button data-run="/api/call?chain=bsc&contract=weth&fn=symbol">▶ BSC WBNB symbol</button></div>
+    <div class="out"></div>
+  </div>
+
+  <div class="card" id="ep-contract-call">
+    <h3><span class="method post">POST</span>/api/contract/call</h3>
+    <p data-i18n-h="p-cc">Encodes params and decodes results by ABI; only view/pure functions are allowed; multi-node failover. <b>contractAddress can be an address-book name</b> (contractName is then inferred); with a 0x address you must pass contractName explicitly (the GET version rejects 0x addresses precisely because ABI can't be reliably inferred from a URL). Preferred for programmatic calls and complex inputs (arrays/structs).</p>
+<pre><span class="c" data-i18n="c3"># Query USDC balance of an address (name usage, chainName omitted)</span>
+curl -X POST https://&lt;your-worker&gt;/api/contract/call \
+  -H 'Content-Type: application/json' \
+  -d '{"chainId":1,"contractAddress":"usdc","functionName":"balanceOf","params":["0x…"]}'
+
+<span class="c" data-i18n="c4"># Browser fetch</span>
+fetch('/api/contract/call', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ chainId: 1, contractAddress: 'usdc',
+                         functionName: 'balanceOf', params: ['0x…'] })
+}).then(r =&gt; r.json())</pre>
+  </div>
+</section>
+
+<!-- ============ 通用 RPC：兜底 ============ -->
+<section id="endpoints-rpc">
+  <h2 data-i18n-h="h2-rpc">Generic RPC<span class="sub">Raw methods not covered by the contract endpoints</span></h2>
+
+  <div class="card" id="ep-rpc">
+    <h3><span class="method post">POST</span>/api/rpc</h3>
+    <p data-i18n-h="p-rpc">Generic read-only RPC: whitelisted read methods are forwarded directly (eth_blockNumber / eth_getBalance / eth_getLogs / eth_call…); broadcast and signing methods always get 403. Use it for balance / block / log queries that don't need ABI decoding.</p>
+<pre>curl -X POST https://&lt;your-worker&gt;/api/rpc \
+  -H 'Content-Type: application/json' \
+  -d '{"chainId":56,"request":{"method":"eth_getBalance","params":["0x…","latest"]}}'</pre>
+  </div>
+</section>
+
+<!-- ============ 辅助元数据 ============ -->
+<section id="endpoints-meta">
+  <h2 data-i18n-h="h2-meta">Auxiliary Metadata<span class="sub">All GET — open directly in a browser</span></h2>
+
+  <div class="card" id="ep-functions">
+    <h3><span class="method get">GET</span>/api/contracts/:name/functions</h3>
+    <p data-i18n-h="p-functions">Function list of one ABI (inputs/outputs/mutability) — enough for a frontend to build call forms dynamically, which is exactly how the Quick Call form above works. Integrators use it most: fetch the list, then let users pick a method.</p>
+<pre>curl https://&lt;your-worker&gt;/api/contracts/token/functions</pre>
+    <div class="row"><button class="primary" data-run="/api/contracts/token/functions">▶ token</button>
+      <button data-run="/api/contracts/multicall3/functions">▶ multicall3</button>
+      <button data-run="/api/contracts/uniswapV2Router/functions">▶ uniswapV2Router</button></div>
+    <div class="out"></div>
+  </div>
+
+  <div class="card" id="ep-addresses">
+    <h3><span class="method get">GET</span>/api/addresses?chainId=1</h3>
+    <p data-i18n-h="p-addresses">Address book: "name → per-chain address" for common contracts. Without chainId it returns the full mapping. Frontends remember the name; switching chains doesn't change it.</p>
+<pre>curl 'https://&lt;your-worker&gt;/api/addresses?chainId=56'</pre>
+    <div class="row"><button class="primary" data-run="/api/addresses?chainId=1">▶ chainId=1</button>
+      <button data-run="/api/addresses?chainId=56">▶ chainId=56</button></div>
+    <div class="out"></div>
+  </div>
+
+  <div class="card" id="ep-chains">
+    <h3><span class="method get">GET</span>/api/chains</h3>
+    <p data-i18n-h="p-chains">Supported chain whitelist: chainId, name, currency, RPC node list. Fetch once at app startup to build a chain selector.</p>
+<pre>curl https://&lt;your-worker&gt;/api/chains</pre>
+    <div class="row"><button class="primary" data-run="/api/chains" data-i18n="try">▶ Try it</button></div>
+    <div class="out"></div>
+  </div>
+
+  <div class="card" id="ep-contracts">
+    <h3><span class="method get">GET</span>/api/contracts</h3>
+    <p data-i18n-h="p-contracts">Built-in contract ABI list (token, erc721, erc1155, erc4626, multicall3, the uniswapV2 family, etc.).</p>
+<pre>curl https://&lt;your-worker&gt;/api/contracts</pre>
+    <div class="row"><button class="primary" data-run="/api/contracts" data-i18n="try">▶ Try it</button></div>
+    <div class="out"></div>
+  </div>
+
+  <div class="card" id="ep-health">
+    <h3><span class="method get">GET</span>/api/health</h3>
+    <p data-i18n-h="p-health">Health check returning status and version. For uptime monitoring; rarely needed otherwise.</p>
+<pre>curl https://&lt;your-worker&gt;/api/health</pre>
+    <div class="row"><button class="primary" data-run="/api/health" data-i18n="try">▶ Try it</button></div>
+    <div class="out"></div>
+  </div>
+</section>
+
+<section id="status">
+  <h2 data-i18n="h2-status">Status Codes</h2>
+  <table>
+    <tr><th data-i18n="th-code">Code</th><th data-i18n="th-meaning">Meaning</th></tr>
+    <tr><td>200</td><td data-i18n="s200">Success (BigInt values serialized as strings)</td></tr>
+    <tr><td>400</td><td data-i18n="s400">Missing/invalid parameters, JSON-RPC param error</td></tr>
+    <tr><td>403</td><td data-i18n="s403">Write operation, signing/broadcast method, or method not in the read-only whitelist</td></tr>
+    <tr><td>404</td><td data-i18n="s404">Chain / ABI / function / address-book name not found</td></tr>
+    <tr><td>502</td><td data-i18n="s502">All nodes for the chain failed (failover exhausted)</td></tr>
+  </table>
+  <footer data-i18n="footer">Read-only public service · See the repo README · Running on Cloudflare Workers free tier</footer>
+</section>
+</main>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+
+// ---------- i18n：默认英文，浏览器语言为中文时自动切换，可手动切换并记住 ----------
+const I18N = {
+  'title': { zh: 'Ethers RPC Proxy · 多链只读 RPC 中转' },
+  'pill-ro': { zh: '只读' },
+  'nav-sub': { zh: '多链 EVM 只读中转 · Cloudflare Workers' },
+  'g-core': { zh: '核心流程' },
+  'nav-pg': { zh: '快速调用' },
+  'nav-pg-d': { zh: '选链 → 选合约 → 选方法 → 读取，例如查代币余额' },
+  'g-contract': { zh: '合约读调用 · 核心' },
+  'nav-call-d': { zh: '链接可分享，手测首选（优先）' },
+  'nav-cc-d': { zh: '程序化调用首选，支持 0x 地址' },
+  'g-rpc': { zh: '通用 RPC · 兜底' },
+  'nav-rpc-d': { zh: '原始 eth_ 方法（余额/区块/日志）' },
+  'g-meta': { zh: '辅助元数据' },
+  'nav-fn-d': { zh: '函数清单，动态表单用' },
+  'nav-addr-d': { zh: '常用合约地址簿' },
+  'nav-chains-d': { zh: '链白名单，启动时拉一次' },
+  'nav-contracts-d': { zh: '内置 ABI 列表' },
+  'nav-health-d': { zh: '健康检查，监控用' },
+  'g-ref': { zh: '参考' },
+  'nav-status': { zh: '状态码约定' },
+  'h1': { zh: '多链只读 RPC 中转' },
+  'tagline': { zh: '统一 RPC 接口 + 按 ABI 解码的合约读调用 + 常用合约地址簿。不广播交易、不接触私钥，签名与广播一律由客户端钱包完成。' },
+  'b1': { zh: '21 条链白名单' }, 'b2': { zh: '10 套合约 ABI' },
+  'b3': { zh: '多节点自动 failover' }, 'b4': { zh: 'CORS 全开' }, 'b5': { zh: '免费额度运行' },
+  'gl-summary': { zh: '🧭 不熟悉区块链术语？点开看 30 秒小白版解释' },
+  'gl-dt1': { zh: '链 ID / 链名' },
+  'gl-dd1': { zh: '约等于<b>某个局域网</b>——以太坊、BSC、Polygon 就是一个个彼此独立的局域网，地址格式相同但互不相通，调用前先选好进哪个网。' },
+  'gl-dt2': { zh: '合约地址 / 名称' },
+  'gl-dd2': { zh: '约等于 <b>IP 地址</b>——每条链上的每个合约都有一个 0x 开头的唯一地址；地址簿名称（如 usdc）是这个服务帮你记的"好记域名"，会按所选链自动换成对应地址。' },
+  'gl-dt3': { zh: '方法' },
+  'gl-dd3': { zh: '约等于<b>接口（API endpoint）</b>——合约对外暴露的一组函数，分读（查余额、查配置）和写（转账、授权）。<span class="x">本项目是集中的特化：只做读，把 web2 前端直接读区块链这件事优化到好用好省。</span>' },
+  'gl-dt4': { zh: '为什么只读？' },
+  'gl-dd4': { zh: '写操作需要私钥签名，那必须发生在你自己的浏览器钱包里（如 MetaMask）。本服务像一层只读缓存网关：快、免费、且不可能动你的资产。' },
+  'pg-h2': { zh: '快速调用<span class="sub">输入链（ID 或名称）→ 合约（名称或 0x 地址）→ 方法 → 读取，生成可分享的 GET 链接</span>' },
+  'presets-label': { zh: '常用示例：' },
+  'preset1': { zh: '查 USDC 余额' },
+  'preset2': { zh: 'BSC 查 WBNB 符号' },
+  'preset3': { zh: 'Polygon 查 WPOL 精度' },
+  'preset4': { zh: 'Multicall3 当前块时间' },
+  'l-chain': { zh: '<b>链</b>（chainId 或链名，如 56 / bsc / polygon）' },
+  'l-contract': { zh: '<b>合约</b>（地址簿名称如 usdc / weth，或 0x 地址）' },
+  'l-abi': { zh: '<b>ABI</b>（填 0x 地址时需选择）' },
+  'l-abi-hint': { zh: '地址簿名称会自动匹配 ABI' },
+  'l-fn': { zh: '<b>方法</b>（自动列出该 ABI 的 view/pure 函数）' },
+  'l-params': { zh: '<b>参数</b>' },
+  'params-empty': { zh: '选择方法后按入参生成输入框' },
+  'run': { zh: '▶ 调用读取' },
+  'c1': { zh: '# 查 vitalik 的 USDC 余额' },
+  'c2': { zh: '# 链也可以用名称，参数自动做类型推断' },
+  'c3': { zh: '# 查某地址的 USDC 余额（名称用法，chainName 省略）' },
+  'c4': { zh: '# 浏览器 fetch' },
+  'h2-call': { zh: '合约读调用<span class="sub">核心接口：同一件事的两种形式，GET 优先</span>' },
+  'p-call': { zh: 'GET 版合约读调用，与 POST /api/contract/call 同一套只读管线。<b>chain</b> 支持 chainId 或链名，<b>contract</b> 支持地址簿名称（0x 地址需用 POST 版显式给 ABI），入参按顺序用重复的 <b>p</b> 传入。上面的快速调用表单走的就是这个接口。' },
+  'p-cc': { zh: '按 ABI 自动编码参数、解码返回值，仅放行 view/pure 函数，多节点 failover。<b>contractAddress 可直接填地址簿名称</b>，contractName 自动推断；传 0x 地址时需显式给 contractName（GET 版不支持 0x 地址就是因为这里无法在 URL 里可靠推断 ABI）。程序化调用首选，参数更复杂的场景（数组/结构体入参）也用它。' },
+  'h2-rpc': { zh: '通用 RPC<span class="sub">合约接口覆盖不到的原始方法走这里</span>' },
+  'p-rpc': { zh: '通用只读 RPC：白名单内的读方法直接转发（eth_blockNumber / eth_getBalance / eth_getLogs / eth_call…），广播与签名方法一律 403。查余额、区块、日志这类不需要 ABI 解码的场景用它。' },
+  'h2-meta': { zh: '辅助元数据<span class="sub">均为 GET，可直接浏览器打开</span>' },
+  'p-functions': { zh: '某个 ABI 的函数清单（入参/出参/状态可变性），前端可据此动态生成调用表单——本页快速调用就是用它驱动的。集成方最常用：先拉清单，再让用户选方法。' },
+  'p-addresses': { zh: '地址簿：常用合约"名称 → 各链地址"。不传 chainId 返回全部链的映射。前端记住名称即可，换链不用换地址。' },
+  'p-chains': { zh: '支持的链白名单：chainId、名称、币种、RPC 节点列表。应用启动时拉一次做链选择器。' },
+  'p-contracts': { zh: '内置的合约 ABI 列表（token、erc721、erc1155、erc4626、multicall3、uniswapV2 全家桶等）。' },
+  'p-health': { zh: '健康检查，返回状态与版本号。监控探活用，平时用不到。' },
+  'try': { zh: '▶ 在线试用' },
+  'h2-status': { zh: '状态码约定' },
+  'th-code': { zh: '状态码' }, 'th-meaning': { zh: '含义' },
+  's200': { zh: '成功（BigInt 已序列化为字符串）' },
+  's400': { zh: '参数缺失 / JSON-RPC 参数错误' },
+  's403': { zh: '写操作、签名/广播方法、不在只读白名单的方法' },
+  's404': { zh: '链 / ABI / 函数 / 地址簿名称不存在' },
+  's502': { zh: '该链所有节点均失败（failover 耗尽）' },
+  'footer': { zh: '只读公共服务 · 详见仓库 README · Cloudflare Workers 免费额度运行' },
+};
+
+// 动态字符串（JS 生成的提示文案）
+const T = {
+  noParams: ['No parameters for this method', '该方法无参数'],
+  paramsEmpty: ['Inputs are generated from the method\'s arguments', '选择方法后按入参生成输入框'],
+  pickAbi: ['— Load after selecting an ABI —', '— 选择 ABI 后加载 —'],
+  pickFn: ['— Select method —', '— 选择方法 —'],
+  addrHint: (abi) => [`Address-book name → ABI "${abi}", per-chain address auto-resolved`, `地址簿名称 → ABI "${abi}"，各链地址自动解析`],
+  addrRecognized: ['0x address recognized — pick an ABI below', '已识别 0x 地址，请在下方选择 ABI'],
+  getHint: ['GET mode: link opens directly, shareable', 'GET 模式：链接可直接打开、可分享'],
+  postHint: ['POST mode: 0x address + manual ABI, for programmatic calls', 'POST 模式：支持 0x 地址 + 手选 ABI，适合程序化调用'],
+  getCurl: ['# Equivalent GET link (open/share directly)', '# 等效 GET 链接（可直接打开/分享）'],
+  postCurl: ['# Equivalent POST request', '# 等效 POST 请求'],
+  badChain: ['Unknown chain: use a whitelisted chainId or name', '未识别的链：填白名单里的 chainId 或链名'],
+  missingGet: ['Fill in first: chain, contract (GET mode supports address-book names only), method', '请先填好：链、合约（GET 模式仅支持地址簿名称）、方法'],
+  missingPost: ['Fill in first: chain, contract (with 0x address also pick an ABI), method', '请先填好：链、合约（0x 地址时还需选 ABI）、方法'],
+  loading: ['Requesting…', '请求中…'],
+  failed: (m) => ['Request failed: ' + m, '请求失败: ' + m],
+  uintPh: ['decimal value, e.g. 1000000', '十进制数值，如 1000000'],
+};
+function t(pair) { return pair[LANG === 'zh' ? 1 : 0]; }
+
+let LANG = 'en';
+function applyLang(lang) {
+  LANG = lang;
+  try { localStorage.setItem('lang', lang); } catch {}
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  $('lang-en').classList.toggle('on', lang === 'en');
+  $('lang-zh').classList.toggle('on', lang === 'zh');
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const e = I18N[el.dataset.i18n];
+    if (!e) return;
+    if (el.dataset.i18nEn === undefined) el.dataset.i18nEn = el.innerHTML;
+    el.innerHTML = lang === 'zh' ? e.zh : el.dataset.i18nEn;
+  });
+  // 保持表单内的动态提示同步
+  refreshFunctions();
+  renderParams();
+  setMode(MODE);
+}
+$('lang-en').addEventListener('click', () => applyLang('en'));
+$('lang-zh').addEventListener('click', () => applyLang('zh'));
+
+let CHAINS = [];            // /api/chains
+let ADDRESSES = {};         // /api/addresses
+let CONTRACTS = [];         // /api/contracts
+let curFunctions = [];      // 当前 ABI 的函数列表
+
+// ---------- 元数据加载 ----------
+async function loadMeta() {
+  try { CHAINS = (await (await fetch('/api/chains')).json()).chains || []; } catch {}
+  $('dl-chains').innerHTML = CHAINS.map(c =>
+    `<option value="${c.chainId}">${c.name} (${c.symbol || ''})</option>`).join('');
+  try { CONTRACTS = (await (await fetch('/api/contracts')).json()).contracts || []; } catch {}
+  try { ADDRESSES = (await (await fetch('/api/addresses')).json()).addresses || {}; } catch {}
+  const names = [...Object.keys(ADDRESSES), ...CONTRACTS];
+  // 合约输入的 datalist
+  const dl = document.createElement('datalist'); dl.id = 'dl-contracts';
+  dl.innerHTML = names.map(n => `<option value="${n}">`).join('');
+  document.body.appendChild(dl);
+  $('f-contract').setAttribute('list', 'dl-contracts');
+}
+
+// 链输入支持 ID 或名称（大小写不敏感，含 shortName）
+function resolveChain(input) {
+  const v = (input || '').trim().toLowerCase();
+  if (!v) return null;
+  return CHAINS.find(c =>
+    String(c.chainId) === v ||
+    (c.name || '').toLowerCase() === v) || null;
+}
+
+// 合约输入：地址簿名称（含 abi）或 0x 地址（需手选 ABI）
+function resolveContract(input) {
+  const v = (input || '').trim();
+  if (/^0x[0-9a-fA-F]{40}$/.test(v)) return { ref: v, abi: $('f-abi').value || null, isAddress: true };
+  const entry = ADDRESSES[v] || ADDRESSES[v.toLowerCase()];
+  if (entry) return { ref: v, abi: entry.abi, isAddress: false };
+  // 不是地址也不是地址簿名称：可能是 ABI 名（本地测试用，地址必填）
+  if (CONTRACTS.includes(v)) return { ref: null, abi: v, isAddress: false };
+  return { ref: v, abi: null, isAddress: false };
+}
+
+// ---------- 方法下拉 ----------
+async function refreshFunctions() {
+  const c = resolveContract($('f-contract').value);
+  $('f-abi-wrap').style.display = c.isAddress ? '' : 'none';
+  $('f-contract-hint').textContent = c.abi && !c.isAddress
+    ? t(T.addrHint(c.abi))
+    : c.isAddress ? t(T.addrRecognized) : '';
+  $('f-fn').innerHTML = `<option value="">${t(T.pickAbi)}</option>`;
+  $('f-params-box').innerHTML = `<div class="hint">${t(T.paramsEmpty)}</div>`;
+  curFunctions = [];
+  if (!c.abi) return;
+  try {
+    const data = await (await fetch(`/api/contracts/${encodeURIComponent(c.abi)}/functions`)).json();
+    curFunctions = (data.functions || []).filter(f => f.stateMutability === 'view' || f.stateMutability === 'pure');
+    $('f-fn').innerHTML = `<option value="">${t(T.pickFn)}</option>` +
+      curFunctions.map(f => {
+        const args = (f.inputs || []).map(i => i.type).join(',');
+        return `<option value="${f.name}">${f.name}(${args})</option>`;
+      }).join('');
+  } catch {}
+}
+
+// ---------- 参数输入框 ----------
+function renderParams() {
+  const fnName = $('f-fn').value;
+  const fn = curFunctions.find(f => f.name === fnName);
+  const box = $('f-params-box');
+  if (!fn || !(fn.inputs || []).length) {
+    box.innerHTML = `<div class="hint">${fn ? t(T.noParams) : t(T.paramsEmpty)}</div>`;
+    updateCurl(); return;
+  }
+  const uintPh = t(T.uintPh);
+  box.innerHTML = fn.inputs.map((i, idx) =>
+    `<div style="margin-bottom:8px;">
+       <label>${idx + 1}. <b>${i.name || i.type}</b> <span style="color:var(--muted)">(${i.type})</span></label>
+       <input class="f-param" data-type="${i.type}" placeholder="${i.type === 'address' ? '0x…' : i.type.startsWith('uint') ? uintPh : i.type}">
+     </div>`).join('');
+  box.querySelectorAll('.f-param').forEach(el => el.addEventListener('input', updateCurl));
+  updateCurl();
+}
+
+// 参数按类型转换：uint/int 接受十进制字符串；bool 转 boolean；其余保持字符串
+function coerceParam(raw, type) {
+  const t2 = type || '';
+  if (t2.startsWith('uint') || t2.startsWith('int')) {
+    return raw.trim(); // ethers 接受十进制字符串
+  }
+  if (t2 === 'bool') return raw.trim() === 'true' || raw.trim() === '1';
+  if (t2.startsWith('bytes') || t2.endsWith(']') || t2.includes('[') || t2.startsWith('tuple')) {
+    try { return JSON.parse(raw); } catch { return raw; } // 数组/元组可用 JSON 传
+  }
+  return raw;
+}
+
+// ---------- GET / POST 模式（默认 GET，优先） ----------
+let MODE = 'get';
+function setMode(m) {
+  MODE = m;
+  $('mode-get').classList.toggle('on', m === 'get');
+  $('mode-post').classList.toggle('on', m === 'post');
+  $('f-curl-hint').textContent = m === 'get' ? t(T.getHint) : t(T.postHint);
+  updateCurl();
+}
+$('mode-get').addEventListener('click', () => setMode('get'));
+$('mode-post').addEventListener('click', () => setMode('post'));
+
+// ---------- 构建 GET 链接 ----------
+function buildGetUrl() {
+  const chain = resolveChain($('f-chain').value);
+  const c = resolveContract($('f-contract').value);
+  const fnName = $('f-fn').value;
+  const fn = curFunctions.find(f => f.name === fnName);
+  if (!chain || !c.ref || !fnName) return null;
+  const qs = new URLSearchParams();
+  qs.set('chain', String(chain.chainId));
+  qs.set('contract', c.ref);
+  qs.set('fn', fnName);
+  if (fn) (fn.inputs || []).forEach((i, idx) => {
+    const el = $('f-params-box').querySelectorAll('.f-param')[idx];
+    if (el && el.value !== '') qs.append('p', el.value.trim());
+  });
+  return '/api/call?' + qs.toString();
+}
+
+// ---------- 构建 POST 请求体 ----------
+function buildPostBody() {
+  const chain = resolveChain($('f-chain').value);
+  const c = resolveContract($('f-contract').value);
+  const fnName = $('f-fn').value;
+  const fn = curFunctions.find(f => f.name === fnName);
+  if (!chain || !c.ref || !fnName || !c.abi) return null;
+  const params = fn ? (fn.inputs || []).map((i, idx) => {
+    const el = $('f-params-box').querySelectorAll('.f-param')[idx];
+    return el ? coerceParam(el.value, i.type) : null;
+  }) : [];
+  return {
+    chainId: chain.chainId,
+    contractAddress: c.ref,
+    contractName: c.abi,
+    functionName: fnName,
+    params
+  };
+}
+
+// ---------- 等效请求预览 ----------
+function updateCurl() {
+  if (MODE === 'get') {
+    const url = buildGetUrl();
+    if (!url) { $('f-curl').style.display = 'none'; return; }
+    $('f-curl').style.display = '';
+    $('f-curl').innerHTML =
+      `<span class="c">${t(T.getCurl)}</span>\n<a href="${url}" target="_blank" style="word-break:break-all;">${url}</a>`;
+  } else {
+    const b = buildPostBody();
+    if (!b) { $('f-curl').style.display = 'none'; return; }
+    $('f-curl').style.display = '';
+    $('f-curl').innerHTML =
+      `<span class="c">${t(T.postCurl)}</span>\ncurl -X POST /api/contract/call \\\n  -H 'Content-Type: application/json' \\\n  -d '${JSON.stringify(b)}'`;
+  }
+}
+
+// ---------- 执行 ----------
+async function runCall() {
+  const out = $('f-out');
+  out.style.display = 'block'; out.classList.remove('err');
+  const chain = resolveChain($('f-chain').value);
+  const chainHint = $('f-chain-hint');
+  if ($('f-chain').value.trim() && !chain) {
+    chainHint.textContent = t(T.badChain);
+  } else {
+    chainHint.textContent = chain ? `→ ${chain.name} (chainId ${chain.chainId})` : '';
+  }
+  let resp;
+  if (MODE === 'get') {
+    const url = buildGetUrl();
+    if (!url) { out.classList.add('err'); out.textContent = t(T.missingGet); return; }
+    out.textContent = t(T.loading);
+    resp = await fetch(url).catch((e) => { out.classList.add('err'); out.textContent = t(T.failed(e.message)); return null; });
+  } else {
+    const b = buildPostBody();
+    if (!b) { out.classList.add('err'); out.textContent = t(T.missingPost); return; }
+    out.textContent = t(T.loading);
+    resp = await fetch('/api/contract/call', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b)
+    }).catch((e) => { out.classList.add('err'); out.textContent = t(T.failed(e.message)); return null; });
+  }
+  if (!resp) return;
+  try {
+    const text = await resp.text();
+    let body; try { body = JSON.stringify(JSON.parse(text), null, 2); } catch { body = text; }
+    if (!resp.ok) out.classList.add('err');
+    out.textContent = 'HTTP ' + resp.status + '\n' + body;
+  } catch (e) { out.classList.add('err'); out.textContent = t(T.failed(e.message)); }
+}
+
+// ---------- 事件绑定 ----------
+$('f-contract').addEventListener('change', refreshFunctions);
+$('f-contract').addEventListener('input', () => { clearTimeout(window.__t); window.__t = setTimeout(refreshFunctions, 400); });
+$('f-fn').addEventListener('change', renderParams);
+$('f-chain').addEventListener('input', updateCurl);
+$('f-run').addEventListener('click', runCall);
+$('f-abi').addEventListener('change', refreshFunctions);
+
+// 预设示例
+document.querySelectorAll('[data-preset]').forEach(btn => btn.addEventListener('click', () => {
+  const p = JSON.parse(btn.dataset.preset);
+  $('f-chain').value = p.chain; $('f-contract').value = p.contract;
+  refreshFunctions().then(() => { $('f-fn').value = p.fn; renderParams(); });
+}));
+
+// 元数据接口的在线试用
+document.querySelectorAll('[data-run]').forEach(btn => btn.addEventListener('click', async () => {
+  const out = btn.closest('.card').querySelector('.out');
+  out.style.display = 'block'; out.classList.remove('err'); out.textContent = t(T.loading);
+  try {
+    const resp = await fetch(btn.dataset.run);
+    const text = await resp.text();
+    let body; try { body = JSON.stringify(JSON.parse(text), null, 2); } catch { body = text; }
+    if (!resp.ok) out.classList.add('err');
+    out.textContent = 'HTTP ' + resp.status + '\n' + body;
+  } catch (e) { out.classList.add('err'); out.textContent = t(T.failed(e.message)); }
+}));
+
+// 导航高亮当前分区
+const links = [...document.querySelectorAll('nav a[href^="#"]')];
+const secs = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+window.addEventListener('scroll', () => {
+  let active = 0;
+  secs.forEach((s, i) => { if (s.getBoundingClientRect().top < 120) active = i; });
+  links.forEach((a, i) => a.classList.toggle('active', i === active));
+}, { passive: true });
+
+// 初始语言：localStorage > 浏览器语言（zh* → 中文）> 英文
+(function initLang() {
+  let saved = null;
+  try { saved = localStorage.getItem('lang'); } catch {}
+  const zh = (navigator.languages || [navigator.language || 'en']).some(l => /^zh/i.test(l || ''));
+  applyLang(saved || (zh ? 'zh' : 'en'));
+})();
+
+loadMeta();
+</script>
+</body>
+</html>

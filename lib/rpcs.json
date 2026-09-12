@@ -1,0 +1,548 @@
+[
+  {
+    "chainId": 1,
+    "name": "Ethereum Mainnet",
+    "shortName": "eth",
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://ethereum-rpc.publicnode.com"
+      },
+      {
+        "url": "https://eth.llamarpc.com"
+      },
+      {
+        "url": "https://1rpc.io/eth"
+      },
+      {
+        "url": "https://eth-mainnet.public.blastapi.io"
+      },
+      {
+        "url": "https://eth-pokt.nodies.app"
+      }
+    ]
+  },
+  {
+    "chainId": 10,
+    "name": "OP Mainnet",
+    "shortName": "oeth",
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://optimism-rpc.publicnode.com"
+      },
+      {
+        "url": "https://1rpc.io/op"
+      },
+      {
+        "url": "https://optimism-mainnet.public.blastapi.io"
+      },
+      {
+        "url": "https://op-pokt.nodies.app"
+      },
+      {
+        "url": "https://optimism.drpc.org"
+      }
+    ]
+  },
+  {
+    "chainId": 25,
+    "name": "Cronos Mainnet",
+    "shortName": "cro",
+    "nativeCurrency": {
+      "name": "Cronos",
+      "symbol": "CRO",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://cronos-evm-rpc.publicnode.com"
+      },
+      {
+        "url": "https://1rpc.io/cro"
+      },
+      {
+        "url": "https://cronos.drpc.org"
+      },
+      {
+        "url": "https://rpc.nebkas.ro"
+      },
+      {
+        "url": "https://evm.cronos.org"
+      }
+    ]
+  },
+  {
+    "chainId": 56,
+    "name": "BNB Smart Chain Mainnet",
+    "shortName": "bnb",
+    "nativeCurrency": {
+      "name": "BNB Chain Native Token",
+      "symbol": "BNB",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://bsc-dataseed1.defibit.io"
+      },
+      {
+        "url": "https://bsc-dataseed2.defibit.io"
+      },
+      {
+        "url": "https://bsc-dataseed3.defibit.io"
+      },
+      {
+        "url": "https://bsc-dataseed4.defibit.io"
+      }
+    ]
+  },
+  {
+    "chainId": 100,
+    "name": "Gnosis",
+    "shortName": "gno",
+    "nativeCurrency": {
+      "name": "xDAI",
+      "symbol": "XDAI",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://gnosis-rpc.publicnode.com"
+      },
+      {
+        "url": "https://1rpc.io/gnosis"
+      },
+      {
+        "url": "https://gnosis-mainnet.public.blastapi.io"
+      },
+      {
+        "url": "https://gnosis-pokt.nodies.app"
+      },
+      {
+        "url": "https://rpc.ankr.com/gnosis"
+      }
+    ]
+  },
+  {
+    "chainId": 137,
+    "name": "Polygon Mainnet",
+    "shortName": "pol",
+    "nativeCurrency": {
+      "name": "POL",
+      "symbol": "POL",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://polygon-bor-rpc.publicnode.com"
+      },
+      {
+        "url": "https://1rpc.io/matic"
+      },
+      {
+        "url": "https://polygon-mainnet.public.blastapi.io"
+      },
+      {
+        "url": "https://polygon-pokt.nodies.app"
+      },
+      {
+        "url": "https://rpc.ankr.com/polygon"
+      }
+    ]
+  },
+  {
+    "chainId": 204,
+    "name": "opBNB Mainnet",
+    "shortName": "obnb",
+    "nativeCurrency": {
+      "name": "BNB Chain Native Token",
+      "symbol": "BNB",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://opbnb-rpc.publicnode.com"
+      },
+      {
+        "url": "https://opbnb-mainnet-rpc.bnbchain.org"
+      },
+      {
+        "url": "https://1rpc.io/opbnb"
+      },
+      {
+        "url": "https://opbnb.drpc.org"
+      }
+    ]
+  },
+  {
+    "chainId": 250,
+    "name": "Fantom Opera",
+    "shortName": "ftm",
+    "nativeCurrency": {
+      "name": "Fantom",
+      "symbol": "FTM",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://fantom-rpc.publicnode.com"
+      },
+      {
+        "url": "https://1rpc.io/ftm"
+      },
+      {
+        "url": "https://fantom-mainnet.public.blastapi.io"
+      },
+      {
+        "url": "https://fantom-pokt.nodies.app"
+      },
+      {
+        "url": "https://fantom.drpc.org"
+      }
+    ]
+  },
+  {
+    "chainId": 324,
+    "name": "zkSync Mainnet",
+    "shortName": "zksync",
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://1rpc.io/zksync2-era"
+      },
+      {
+        "url": "https://rpc.ankr.com/zksync_era"
+      },
+      {
+        "url": "https://zksync.drpc.org"
+      },
+      {
+        "url": "https://mainnet.era.zksync.io"
+      }
+    ]
+  },
+  {
+    "chainId": 8453,
+    "name": "Base",
+    "shortName": "base",
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://base-rpc.publicnode.com"
+      },
+      {
+        "url": "https://base.llamarpc.com"
+      },
+      {
+        "url": "https://1rpc.io/base"
+      },
+      {
+        "url": "https://base-mainnet.public.blastapi.io"
+      },
+      {
+        "url": "https://base-pokt.nodies.app"
+      }
+    ]
+  },
+  {
+    "chainId": 42161,
+    "name": "Arbitrum One",
+    "shortName": "arb1",
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://arbitrum-one-rpc.publicnode.com"
+      },
+      {
+        "url": "https://1rpc.io/arb"
+      },
+      {
+        "url": "https://arbitrum-one.public.blastapi.io"
+      },
+      {
+        "url": "https://arb-pokt.nodies.app"
+      },
+      {
+        "url": "https://arbitrum.drpc.org"
+      }
+    ]
+  },
+  {
+    "chainId": 43114,
+    "name": "Avalanche C-Chain",
+    "shortName": "avax",
+    "nativeCurrency": {
+      "name": "Avalanche",
+      "symbol": "AVAX",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://avalanche-c-chain-rpc.publicnode.com"
+      },
+      {
+        "url": "https://1rpc.io/avax/c"
+      },
+      {
+        "url": "https://ava-mainnet.public.blastapi.io/ext/bc/C/rpc"
+      },
+      {
+        "url": "https://avax-pokt.nodies.app/ext/bc/C/rpc"
+      },
+      {
+        "url": "https://avalanche.drpc.org"
+      }
+    ]
+  },
+  {
+    "chainId": 5000,
+    "name": "Mantle",
+    "shortName": "mantle",
+    "nativeCurrency": {
+      "name": "Mantle",
+      "symbol": "MNT",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://mantle-rpc.publicnode.com"
+      },
+      {
+        "url": "https://1rpc.io/mantle"
+      },
+      {
+        "url": "https://mantle-mainnet.public.blastapi.io"
+      },
+      {
+        "url": "https://mantle.drpc.org"
+      },
+      {
+        "url": "https://rpc.mantle.xyz"
+      }
+    ]
+  },
+  {
+    "chainId": 59144,
+    "name": "Linea",
+    "shortName": "linea",
+    "nativeCurrency": {
+      "name": "Linea Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://linea-rpc.publicnode.com"
+      },
+      {
+        "url": "https://1rpc.io/linea"
+      },
+      {
+        "url": "https://linea.drpc.org"
+      },
+      {
+        "url": "https://rpc.linea.build"
+      }
+    ]
+  },
+  {
+    "chainId": 534352,
+    "name": "Scroll",
+    "shortName": "scr",
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://scroll-rpc.publicnode.com"
+      },
+      {
+        "url": "https://1rpc.io/scroll"
+      },
+      {
+        "url": "https://scroll-mainnet.public.blastapi.io"
+      },
+      {
+        "url": "https://rpc.ankr.com/scroll"
+      },
+      {
+        "url": "https://scroll.drpc.org"
+      }
+    ]
+  },
+  {
+    "chainId": 97,
+    "name": "BNB Smart Chain Testnet",
+    "shortName": "bnbt",
+    "nativeCurrency": {
+      "name": "BNB Chain Native Token",
+      "symbol": "tBNB",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://bsc-testnet.publicnode.com"
+      },
+      {
+        "url": "https://data-seed-prebsc-1-s1.bnbchain.org:8545"
+      },
+      {
+        "url": "https://data-seed-prebsc-2-s1.bnbchain.org:8545"
+      },
+      {
+        "url": "https://data-seed-prebsc-1-s2.bnbchain.org:8545"
+      },
+      {
+        "url": "https://data-seed-prebsc-2-s2.bnbchain.org:8545"
+      },
+      {
+        "url": "https://data-seed-prebsc-1-s3.bnbchain.org:8545"
+      }
+    ]
+  },
+  {
+    "chainId": 80002,
+    "name": "Amoy",
+    "shortName": "polygonamoy",
+    "nativeCurrency": {
+      "name": "POL",
+      "symbol": "POL",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://polygon-bor-amoy-rpc.publicnode.com"
+      },
+      {
+        "url": "https://polygon-amoy-bor-rpc.publicnode.com"
+      },
+      {
+        "url": "https://polygon-amoy.drpc.org"
+      },
+      {
+        "url": "https://api.zan.top/polygon-amoy"
+      }
+    ]
+  },
+  {
+    "chainId": 84532,
+    "name": "Base Sepolia Testnet",
+    "shortName": "basesep",
+    "nativeCurrency": {
+      "name": "Sepolia Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://base-sepolia-rpc.publicnode.com"
+      },
+      {
+        "url": "https://base-sepolia.drpc.org"
+      },
+      {
+        "url": "https://sepolia.base.org"
+      },
+      {
+        "url": "https://rpc.notadegen.com/base/sepolia"
+      }
+    ]
+  },
+  {
+    "chainId": 421614,
+    "name": "Arbitrum Sepolia",
+    "shortName": "arb-sep",
+    "nativeCurrency": {
+      "name": "Sepolia Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://arbitrum-sepolia-rpc.publicnode.com"
+      },
+      {
+        "url": "https://arbitrum-sepolia.drpc.org"
+      },
+      {
+        "url": "https://sepolia-rollup.arbitrum.io/rpc"
+      },
+      {
+        "url": "https://api.zan.top/arb-sepolia"
+      }
+    ]
+  },
+  {
+    "chainId": 11155111,
+    "name": "Ethereum Sepolia",
+    "shortName": "sep",
+    "nativeCurrency": {
+      "name": "Sepolia Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://ethereum-sepolia-rpc.publicnode.com"
+      },
+      {
+        "url": "https://1rpc.io/sepolia"
+      },
+      {
+        "url": "https://eth-sepolia.public.blastapi.io"
+      },
+      {
+        "url": "https://sepolia.drpc.org"
+      },
+      {
+        "url": "https://0xrpc.io/sep"
+      }
+    ]
+  },
+  {
+    "chainId": 11155420,
+    "name": "OP Sepolia Testnet",
+    "shortName": "opsep",
+    "nativeCurrency": {
+      "name": "Sepolia Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "rpc": [
+      {
+        "url": "https://optimism-sepolia.drpc.org"
+      },
+      {
+        "url": "https://sepolia.optimism.io"
+      },
+      {
+        "url": "https://api.zan.top/opt-sepolia"
+      },
+      {
+        "url": "https://optimism-sepolia.gateway.tenderly.co"
+      }
+    ]
+  }
+]

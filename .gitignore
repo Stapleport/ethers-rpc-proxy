@@ -1,0 +1,22 @@
+# 依赖
+node_modules
+
+# 环境变量与密钥（wrangler 本地密钥文件 .dev.vars 也在其中）
+.env
+.env.*
+.dev.vars
+.dev.vars.*
+
+# 构建产物与缓存
+.wrangler
+.next
+.vercel
+dist
+
+# 日志
+*.log
+wrangler-log*
+
+# 系统文件
+.DS_Store
+Thumbs.db
