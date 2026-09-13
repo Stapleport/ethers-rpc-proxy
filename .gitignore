@@ -10,7 +10,6 @@ node_modules
 # 构建产物与缓存
 .wrangler
 .next
-.vercel
 dist
 
 # 日志

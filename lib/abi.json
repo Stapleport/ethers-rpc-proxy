@@ -200,12 +200,12 @@
     },
     {
       "inputs": [],
-      "name": "SweepPay_version",
+      "name": "DEFAULT_ADMIN_ROLE",
       "outputs": [
         {
-          "internalType": "uint256",
+          "internalType": "bytes32",
           "name": "",
-          "type": "uint256"
+          "type": "bytes32"
         }
       ],
       "stateMutability": "view",
@@ -213,12 +213,25 @@
     },
     {
       "inputs": [],
-      "name": "DEFAULT_ADMIN_ROLE",
+      "name": "FREE_COLLECT_QUOTA",
       "outputs": [
         {
-          "internalType": "bytes32",
+          "internalType": "uint32",
           "name": "",
-          "type": "bytes32"
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "FREE_PAID_QUOTA",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
         }
       ],
       "stateMutability": "view",
@@ -271,6 +284,19 @@
     },
     {
       "inputs": [],
+      "name": "SweepPay_version",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "UPGRADER_ROLE",
       "outputs": [
         {
@@ -296,6 +322,30 @@
           "internalType": "address",
           "name": "walletadd",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "treasury",
+          "type": "address"
+        }
+      ],
+      "name": "affiliate_split",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "aff",
+          "type": "address"
+        },
+        {
+          "internalType": "uint64",
+          "name": "rate",
+          "type": "uint64"
         }
       ],
       "stateMutability": "view",
@@ -344,6 +394,19 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "treasury",
+          "type": "address"
+        }
+      ],
+      "name": "bump_collect_counters",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -410,6 +473,35 @@
           "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "treasury",
+          "type": "address"
+        }
+      ],
+      "name": "fee_state",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "exempt",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint32",
+          "name": "collectCount",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "paidCount",
+          "type": "uint32"
         }
       ],
       "stateMutability": "view",
@@ -1082,6 +1174,30 @@
           "internalType": "contract IUniswapV2Router",
           "name": "router",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "treasury_counters",
+      "outputs": [
+        {
+          "internalType": "uint32",
+          "name": "collect_count",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "paid_count",
+          "type": "uint32"
         }
       ],
       "stateMutability": "view",

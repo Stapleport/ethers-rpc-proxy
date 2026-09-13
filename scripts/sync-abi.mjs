@@ -9,7 +9,7 @@
  *   npm run check-abi  # 只校验是否同步（构建前检查），不一致时退出码 1
  *
  * hardhat 源目录可用环境变量 HARDHAT_ROOT 覆盖，默认取仓库隔壁的 SweepPay_hardhat。
- * 找不到 hardhat artifacts 时（如 Vercel 独立部署）自动跳过 artifacts 部分，不阻塞构建。
+ * 找不到 hardhat artifacts 时（如独立部署环境）自动跳过 artifacts 部分，不阻塞构建。
  */
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
