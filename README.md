@@ -1,6 +1,6 @@
 # Ethers RPC Proxy
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/SweepPay/ethers-rpc-proxy)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Stapleport/ethers-rpc-proxy)
 
 **[English](#english) | [中文](#中文)**
 
@@ -12,7 +12,7 @@ It never broadcasts transactions and never touches private keys — signing and 
 
 *From `npm install` to a live deployment and an on-chain USDC balance query in ~20 seconds (sped up). Live demo: <https://ethers-rpc-proxy.kflc.workers.dev>*
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/SweepPay/ethers-rpc-proxy)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Stapleport/ethers-rpc-proxy)
 
 **One click, zero config.** The button connects this repo to your Cloudflare account, builds and deploys it as a Worker on the free tier, and gives you your own `*.workers.dev` URL. No environment variables or secrets needed — everything works out of the box.
 
@@ -158,7 +158,7 @@ The read-only guarantees are unchanged on custom upstreams: the method allowlist
 
 ### Built-in Contracts
 
-- **Imputations** — SweepPay collection contract (`getpath`/`getwalletadd`, balance queries, batch-collection params). Synced from hardhat artifacts.
+- **Imputations** — Stapleport collection contract (`getpath`/`getwalletadd`, balance queries, batch-collection params). Synced from hardhat artifacts.
 - **token** — standard ERC20
 - **erc721** — NFT standard incl. Enumerable reads
 - **erc1155** — multi-token standard
@@ -230,7 +230,7 @@ To add a standard contract (e.g. ERC721A), drop `erc721a.json` into `scripts/sta
 
 *从 `npm install` 到部署上线、查到链上 USDC 余额，全程约 20 秒（已加速）。在线演示：<https://ethers-rpc-proxy.kflc.workers.dev>*
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/SweepPay/ethers-rpc-proxy)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Stapleport/ethers-rpc-proxy)
 
 **一键部署，零配置。** 点击按钮授权 Cloudflare 账号后，会自动关联本仓库、构建并部署为一个 Worker（免费版即可），直接得到你自己的 `*.workers.dev` 地址。不需要任何环境变量或密钥，开箱即用。
 
@@ -370,7 +370,7 @@ curl -X POST https://<your-worker>/api/contract/call -H 'Content-Type: applicati
 
 ### 内置合约
 
-- **Imputations** —— SweepPay 归集合约：收款地址派生（`getpath`/`getwalletadd`）、到账查询（`gettokensreceiveds`）、批量归集参数读取（`imputationall` 等）。从 hardhat 编译产物同步。
+- **Imputations** —— Stapleport 归集合约：收款地址派生（`getpath`/`getwalletadd`）、到账查询（`gettokensreceiveds`）、批量归集参数读取（`imputationall` 等）。从 hardhat 编译产物同步。
 - **token** —— 标准 ERC20
 - **erc721** —— NFT 标准（含 Enumerable 读扩展）
 - **erc1155** —— 多代币标准

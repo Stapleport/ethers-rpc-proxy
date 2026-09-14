@@ -1,9 +1,10 @@
 {
     "imputations": {
         "abi": "Imputations",
-        "description": "SweepPay 归集合约：CREATE2 收款地址派生与 gas 代付归集（仅已配置的链可解析，其余用 POST 裸地址调用）",
+        "description": "Stapleport 归集合约：CREATE2 收款地址派生与 gas 代付归集（仅已配置的链可解析，其余用 POST 裸地址调用）",
         "addresses": {
-            "31337": "0x873f15F365382F09Ad9E2694081d7b09cF6d00D8"
+            "31337": "0x528749edd316c3734680889982B278A83b07EB29",
+            "7156777": "0x07931fB4D280F679D6327c04ccE14223492DA411"
         }
     },
     "multicall3": {
