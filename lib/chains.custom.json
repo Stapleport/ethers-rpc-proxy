@@ -16,10 +16,10 @@
   {
     "chainId": 78753,
     "name": "stapleport",
-    "shortName": "zm",
+    "shortName": "stpl",
     "nativeCurrency": {
-      "name": "Ether",
-      "symbol": "ETH",
+      "name": "Stapleport",
+      "symbol": "STPL",
       "decimals": 18
     },
     "rpc": [
