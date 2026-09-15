@@ -181,9 +181,10 @@ test('imputations address book entry resolves per-chain without wildcard fallbac
     assert.equal(addressBook.imputations.abi, 'Imputations');
     const local = resolveContractAddress(31337, 'imputations');
     assert.match(local.address, /^0x[0-9a-fA-F]{40}$/);
-    // 未配置的链不能误回退到别的链地址
+    // 已配置链精确解析；未配置的链不能误回退到别的链地址
+    assert.equal(resolveContractAddress(78753, 'imputations').address, '0x873f15F365382F09Ad9E2694081d7b09cF6d00D8');
     assert.equal(resolveContractAddress(56, 'imputations'), null);
-    assert.equal(resolveContractAddress(7156777, 'imputations'), null);
+    assert.equal(resolveContractAddress(137, 'imputations'), null);
 });
 
 test('request-level custom rpc is rejected with 403 when the instance gate is off', async () => {

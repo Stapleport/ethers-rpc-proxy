@@ -284,7 +284,7 @@
     },
     {
       "inputs": [],
-      "name": "SweepPay_version",
+      "name": "Stapleport_version",
       "outputs": [
         {
           "internalType": "uint256",

@@ -14,8 +14,8 @@
     ]
   },
   {
-    "chainId": 7156777,
-    "name": "zhaomei",
+    "chainId": 78753,
+    "name": "stapleport",
     "shortName": "zm",
     "nativeCurrency": {
       "name": "Ether",
@@ -24,7 +24,7 @@
     },
     "rpc": [
       {
-        "url": "https://rpc.egoistmusic.top"
+        "url": "https://rpc.stapleport.com"
       }
     ]
   }
