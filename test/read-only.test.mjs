@@ -15,6 +15,7 @@ import {
     handleContractCall,
     getSupportedContracts,
     getContractFunctions,
+    isRetryableNodeError,
 } from '../lib/rpcHandler.js';
 
 /** 业务错误带 status，直接断言它 */
@@ -246,5 +247,108 @@ test('custom rpc keeps the read-only gates and skips the chain whitelist (zero n
             ['0x1111111111111111111111111111111111111111', 1], { customRpcUrl: 'https://my-own-node.example' }
         ),
         403, /read-only/
+    );
+});
+
+// ---------- 2026-09-17 优化/健壮性回归 ----------
+
+// 回归：POST 版曾在链名→id 解析之前查地址簿，chainId 传链名时 Number("bsc")=NaN
+// 导致地址簿名称 404（GET 版一直正常）
+test('POST /api/contract/call accepts chain names, same as GET (address book resolves)', async () => {
+    const res = await app.request('/api/contract/call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chainId: 'bsc', contractAddress: 'usdc', functionName: 'noSuchFunction', params: [] }),
+    });
+    assert.equal(res.status, 404);
+    // 能走到"函数不存在"说明链名已解析、usdc 地址已命中（若回归则报 Unknown contract reference）
+    assert.match((await res.json()).error, /does not exist in contract token/);
+    // 别名与全名同样生效
+    for (const chainId of ['eth', 'ethereum', '1']) {
+        const res2 = await app.request('/api/contract/call', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chainId, contractAddress: 'usdc', functionName: 'noSuchFunction', params: [] }),
+        });
+        assert.equal(res2.status, 404, chainId);
+        assert.match((await res2.json()).error, /does not exist in contract token/);
+    }
+});
+
+test('GET /api/addresses accepts chain names and aliases (not just numeric ids)', async () => {
+    for (const chainId of ['bsc', 'eth', '56']) {
+        const res = await app.request(`/api/addresses?chainId=${chainId}`);
+        assert.equal(res.status, 200, chainId);
+        const { addresses } = await res.json();
+        assert.match(addresses.usdc.address, /^0x[0-9a-fA-F]{40}$/, `usdc should resolve for ${chainId}`);
+    }
+});
+
+test('JSON-RPC batch (array) requests get an explicit 400, not a misleading allowlist 403', async () => {
+    await expectStatus(
+        handleRpcRequest([{ method: 'eth_blockNumber', params: [] }], 1),
+        400, /batch/i
+    );
+    const res = await app.request('/api/rpc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chainId: 1, request: [{ method: 'eth_blockNumber', params: [] }] }),
+    });
+    assert.equal(res.status, 400);
+    assert.match((await res.json()).error, /batch/i);
+});
+
+test('eth_getLogs with an oversized explicit block range is rejected with 400 before any network call', async () => {
+    // hex 与十进制都拦；100001 / 20000 均超 10000 上限
+    await expectStatus(
+        handleRpcRequest({ method: 'eth_getLogs', params: [{ fromBlock: '0x0', toBlock: '0x186a1' }] }, 1),
+        400, /range/i
+    );
+    await expectStatus(
+        handleRpcRequest({ method: 'eth_getLogs', params: [{ fromBlock: '0', toBlock: '20000' }] }, 1),
+        400, /range/i
+    );
+});
+
+test('GET /api/call with an invalid custom rpc url returns 400, not an unhandled 500', async () => {
+    const res = await app.request(
+        '/api/call?chain=1&contract=usdc&fn=balanceOf&p=0x1111111111111111111111111111111111111111&rpc=notaurl',
+        undefined,
+        { ALLOW_CUSTOM_RPC: 'true' }
+    );
+    assert.equal(res.status, 400);
+    assert.match((await res.json()).error, /invalid custom rpc/i);
+});
+
+// ---------- failover 判定（纯单元，零网络）----------
+
+test('isRetryableNodeError: empty eth_call results decode-fail retryable; business errors not', () => {    // 节点偶发空结果 → ethers 解码越界（buffer 空）→ 该换节点（BSC 实锤过一次）
+    const overrun = Object.assign(new RangeError('cannot slice beyond data bounds'), {
+        code: 'BUFFER_OVERRUN', buffer: new Uint8Array(0),
+    });
+    assert.equal(isRetryableNodeError(overrun), true);
+    // buffer 非空的越界更像 ABI 不匹配/烂数据（业务错误），不换节点
+    const overrunDirty = Object.assign(new RangeError('cannot slice beyond data bounds'), {
+        code: 'BUFFER_OVERRUN', buffer: new Uint8Array([1, 2, 3]),
+    });
+    assert.equal(isRetryableNodeError(overrunDirty), false);
+    // revert / 参数错是业务错误，重试无意义
+    assert.equal(isRetryableNodeError({ code: 'CALL_EXCEPTION', message: 'execution reverted' }), false);
+    assert.equal(isRetryableNodeError(Object.assign(new Error('JSON-RPC error -32602: invalid params'), { status: 400 })), false);
+    // rawRpcCall 的结构化标记优先于正则
+    assert.equal(isRetryableNodeError(Object.assign(new Error('upstream HTTP 429'), { retryable: true })), true);
+    assert.equal(isRetryableNodeError({ code: 'NETWORK_ERROR', message: 'fetch failed' }), true);
+    assert.equal(isRetryableNodeError(new Error('upstream HTTP 404 from x')), false);
+});
+
+test('handleContractCall only accepts 0x addresses (non-hex targets would silently go through ethers ENS resolution)', async () => {
+    // 名称/ENS 域名不该走到这里：worker 层负责把地址簿名称 resolve 成 0x 地址
+    await expectStatus(
+        handleContractCall(1, 'usdc', 'token', 'symbol', []),
+        400, /must be a 0x address/
+    );
+    await expectStatus(
+        handleContractCall(1, 'vitalik.eth', 'token', 'symbol', []),
+        400, /must be a 0x address/
     );
 });

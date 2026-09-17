@@ -49,7 +49,7 @@ You get a URL like `https://ethers-rpc-proxy.<your-subdomain>.workers.dev`. The 
 
 ### API
 
-All errors are `{ "success": false, "error": "..." }` with semantic status codes: 400 bad params, 403 write operation or non-whitelisted method, 404 unknown chain/contract/function, 502 all upstream nodes failed.
+All errors are `{ "success": false, "error": "..." }` with semantic status codes: 400 bad params, 403 write operation or non-whitelisted method, 404 unknown chain/contract/function, 502 all upstream nodes failed, 504 failover budget exhausted.
 
 #### Contract read — GET (preferred)
 
@@ -90,7 +90,7 @@ curl 'https://<your-worker>/api/call?chain=bsc&contract=weth&fn=symbol'
 { "chainId": 1, "request": { "method": "eth_blockNumber", "params": [] } }
 ```
 
-Read methods are whitelisted (`eth_call`, `eth_getLogs`, `eth_getBalance`, `eth_feeHistory`, ...); broadcast/sign methods return 403.
+Read methods are whitelisted (`eth_call`, `eth_getLogs`, `eth_getBalance`, `eth_feeHistory`, ...); broadcast/sign methods return 403. Batches (array bodies) are not supported — one method per request (400 otherwise). `eth_getLogs` with an explicit numeric block range wider than 10,000 blocks returns 400; narrow the range or use a named tag such as `latest`. Fee methods are fetched from the node directly; `eth_maxPriorityFeePerGas`/`eth_maxFeePerGas` return `null` on nodes that don't implement them.
 
 #### Metadata (all GET)
 
@@ -99,7 +99,7 @@ Read methods are whitelisted (`eth_call`, `eth_getLogs`, `eth_getBalance`, `eth_
 | `GET /api/chains` | Supported chains whitelist with endpoints |
 | `GET /api/contracts` | Built-in ABI list |
 | `GET /api/contracts/:name/functions` | Function list of an ABI (inputs/outputs/mutability) |
-| `GET /api/addresses?chainId=1` | Address book; pass `chainId` to resolve per-chain addresses |
+| `GET /api/addresses?chainId=1` | Address book; pass `chainId` (id, name, or alias) to resolve per-chain addresses |
 | `GET /api/health` | Health check |
 
 ### Supported Chains
@@ -210,7 +210,7 @@ npm run check-abi   # CI check: exits 1 if abi.json is stale
 
 To add a standard contract (e.g. ERC721A), drop `erc721a.json` into `scripts/standard-abis/` and rerun `npm run sync-abi`. To add a hardhat contract, add a row to the `CONTRACTS` map in `scripts/sync-abi.mjs`.
 
-**Failover strategy** — no pre-flight health checks (they waste subrequests and latency): nodes are tried in order; network errors / rate limits / 5xx switch to the next node, business errors (revert, invalid params) return immediately. All nodes failing yields 502.
+**Failover strategy** — no pre-flight health checks (they waste subrequests and latency): nodes are tried in order; network errors / rate limits / 5xx / empty `eth_call` results switch to the next node, business errors (revert, invalid params) return immediately. A total failover budget of 15s caps the worst case (later nodes get shrinking timeouts); exhausting it yields 504. All nodes failing yields 502.
 
 ### Free-tier Notes
 
@@ -261,7 +261,7 @@ npm run deploy
 
 ### API
 
-所有错误响应形如 `{ "success": false, "error": "..." }`，并带语义化状态码：400 参数缺失/不合法、403 写操作或方法不在白名单、404 链/合约/函数不存在、502 上游节点全部失败。
+所有错误响应形如 `{ "success": false, "error": "..." }`，并带语义化状态码：400 参数缺失/不合法、403 写操作或方法不在白名单、404 链/合约/函数不存在、502 上游节点全部失败、504 failover 总预算耗尽。
 
 #### 合约读调用 —— GET（优先）
 
@@ -302,7 +302,7 @@ curl 'https://<your-worker>/api/call?chain=bsc&contract=weth&fn=symbol'
 { "chainId": 1, "request": { "method": "eth_blockNumber", "params": [] } }
 ```
 
-只读方法白名单（`eth_call`、`eth_getLogs`、`eth_getBalance`、`eth_feeHistory` 等）；广播与签名类方法返回 403。
+只读方法白名单（`eth_call`、`eth_getLogs`、`eth_getBalance`、`eth_feeHistory` 等）；广播与签名类方法返回 403。不支持批量（数组）请求——一次一个方法，否则 400。`eth_getLogs` 显式数字 block range 超过 10000 块返回 400（缩小范围或改用 `latest` 等命名 tag）。fee 系列直接从节点单方法读取；节点不支持 `eth_maxPriorityFeePerGas`/`eth_maxFeePerGas` 时返回 `null`。
 
 #### 元数据接口（均为 GET）
 
@@ -311,7 +311,7 @@ curl 'https://<your-worker>/api/call?chain=bsc&contract=weth&fn=symbol'
 | `GET /api/chains` | 支持的链白名单与节点 |
 | `GET /api/contracts` | 内置 ABI 列表 |
 | `GET /api/contracts/:name/functions` | 某 ABI 的函数清单（入参/出参/可变性） |
-| `GET /api/addresses?chainId=1` | 地址簿；传 chainId 返回该链解析出的地址 |
+| `GET /api/addresses?chainId=1` | 地址簿；传 chainId（数字/链名/别名）返回该链解析出的地址 |
 | `GET /api/health` | 健康检查 |
 
 ### 支持的链
@@ -422,7 +422,7 @@ npm run check-abi   # CI 检查：abi.json 过期则退出码 1
 
 要加标准合约（如 ERC721A）：在 `scripts/standard-abis/` 放一个 `erc721a.json`，重跑 `npm run sync-abi`。要同步其他 hardhat 合约：在 `scripts/sync-abi.mjs` 的 `CONTRACTS` 表里加一行。
 
-**Failover 策略** —— 不做前置健康检查（省子请求与延迟）：按 `rpcs.json` 顺序逐个节点请求，网络错误/限流/5xx 自动切下一个；业务错误（revert、参数不合法）直接返回不换节点。所有节点失败返回 502。
+**Failover 策略** —— 不做前置健康检查（省子请求与延迟）：按 `rpcs.json` 顺序逐个节点请求，网络错误/限流/5xx/空 `eth_call` 结果自动切下一个；业务错误（revert、参数不合法）直接返回不换节点。failover 总预算 15s（后备节点超时随剩余预算递减），耗尽返回 504；所有节点失败返回 502。
 
 ### 免费额度与限制
 

@@ -12,6 +12,7 @@ import {
     rpcConfig,
     pendingChains,
     lookupChain,
+    parseChainRef,
     addressBook,
     handleRpcRequest,
     handleContractCall,
@@ -95,7 +96,9 @@ get('/api/contracts', (c) => {
 
 get('/api/addresses', (c) => {
     c.header('Cache-Control', STATIC_CACHE);
-    const chainId = c.req.query('chainId');
+    // chainId 参数同样接受链名/别名（与调用端点口径一致）；解析不了按该链未配置处理
+    const chainIdParam = c.req.query('chainId');
+    const key = chainIdParam ? String(parseChainRef(chainIdParam)) : null;
     return c.json({
         success: true,
         addresses: Object.fromEntries(
@@ -104,8 +107,8 @@ get('/api/addresses', (c) => {
                 {
                     abi: entry.abi,
                     description: entry.description,
-                    address: chainId
-                        ? entry.addresses[String(Number(chainId))] || entry.addresses['*'] || null
+                    address: key
+                        ? entry.addresses[key] || entry.addresses['*'] || null
                         : entry.addresses,
                 },
             ])
@@ -143,7 +146,8 @@ get('/api/call', async (c) => {
     }
     const chainIdNum = chainCfg.chainId;
 
-    // 参数做了简单类型推断：纯数字/true/false/JSON 数组自动转换，其余当字符串
+    // 参数做了简单类型推断：true/false/JSON 数组自动转换；纯数字刻意保持字符串——
+    // 超大数走 JSON.parse 会丢精度，字符串交给 ethers/bigint 才安全
     const typed = params.map((p) => {
         if (/^-?\d+$/.test(p)) return p;
         if (p === 'true') return true;
@@ -240,9 +244,20 @@ post('/api/contract/call', async (c) => {
         return c.json({ success: false, error: CUSTOM_RPC_DISABLED }, 403);
     }
 
+    // 先把链解析成数字 id 再查地址簿：chainId 允许传链名/别名，直接拿原始值查地址簿
+    // 会 NaN 落空（GET /api/call 一直是先 lookup 再 resolve，这里对齐；lookupChain
+    // 对 pending 链/自定义 rpc 的结果有缓存，handleContractCall 内的再次调用零成本）
+    let chainCfg;
+    try {
+        chainCfg = await lookupChain(chainId, rpc);
+    } catch (error) {
+        console.error('Chain lookup error:', error.message);
+        return c.json({ success: false, error: error.message }, error.status || 500);
+    }
+
     // contractAddress 可以是地址簿名称（如 "multicall3"）；此时 contractName 可省略，
     // 由地址簿条目里的 abi 字段补上
-    const resolved = resolveContractAddress(chainId, contractAddress);
+    const resolved = resolveContractAddress(chainCfg.chainId, contractAddress);
     if (!resolved) {
         return c.json(
             { success: false, error: `Unknown contract reference: ${contractAddress} (not a 0x address or address book entry)` },
@@ -259,7 +274,7 @@ post('/api/contract/call', async (c) => {
     }
 
     try {
-        const result = await handleContractCall(chainId, finalAddress, finalName, functionName, params, { customRpcUrl: rpc, requestAbi: abi });
+        const result = await handleContractCall(chainCfg.chainId, finalAddress, finalName, functionName, params, { customRpcUrl: rpc, requestAbi: abi });
         return c.json({
             success: true,
             result,
