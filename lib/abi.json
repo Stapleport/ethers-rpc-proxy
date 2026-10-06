@@ -1,41 +1,20 @@
 {
   "Imputations": [
     {
-      "inputs": [],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
           "internalType": "address",
-          "name": "previousAdmin",
+          "name": "account",
           "type": "address"
         },
         {
-          "indexed": false,
-          "internalType": "address",
-          "name": "newAdmin",
-          "type": "address"
+          "internalType": "bytes32",
+          "name": "neededRole",
+          "type": "bytes32"
         }
       ],
-      "name": "AdminChanged",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "beacon",
-          "type": "address"
-        }
-      ],
-      "name": "BeaconUpgraded",
-      "type": "event"
+      "name": "AccessControlUnauthorizedAccount",
+      "type": "error"
     },
     {
       "anonymous": false,
@@ -84,88 +63,25 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
           "indexed": false,
-          "internalType": "uint8",
-          "name": "version",
-          "type": "uint8"
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
         }
       ],
-      "name": "Initialized",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "role",
-          "type": "bytes32"
-        },
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "previousAdminRole",
-          "type": "bytes32"
-        },
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "newAdminRole",
-          "type": "bytes32"
-        }
-      ],
-      "name": "RoleAdminChanged",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "role",
-          "type": "bytes32"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        }
-      ],
-      "name": "RoleGranted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "role",
-          "type": "bytes32"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        }
-      ],
-      "name": "RoleRevoked",
+      "name": "FeesWithdrawn",
       "type": "event"
     },
     {
@@ -174,16 +90,24 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "implementation",
+          "name": "token",
           "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
         }
       ],
-      "name": "Upgraded",
+      "name": "TokenRescued",
       "type": "event"
-    },
-    {
-      "stateMutability": "payable",
-      "type": "fallback"
     },
     {
       "inputs": [],
@@ -309,22 +233,10 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "salt",
-          "type": "bytes32"
-        }
-      ],
-      "name": "_getwalletadd",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "walletadd",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
+      "inputs": [],
+      "name": "accrueOwnerFees",
+      "outputs": [],
+      "stateMutability": "payable",
       "type": "function"
     },
     {
@@ -399,6 +311,66 @@
     {
       "inputs": [
         {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "address[]",
+              "name": "recipients",
+              "type": "address[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "amounts",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct batch_writer.s_batchtask",
+          "name": "task",
+          "type": "tuple"
+        }
+      ],
+      "name": "batchTransfer",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "address[]",
+              "name": "recipients",
+              "type": "address[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "amounts",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct batch_writer.s_batchtask",
+          "name": "task",
+          "type": "tuple"
+        }
+      ],
+      "name": "batchTransferAmounts",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
           "name": "treasury",
           "type": "address"
@@ -413,12 +385,12 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "",
+          "name": "wallet",
           "type": "address"
         },
         {
           "internalType": "address",
-          "name": "",
+          "name": "token",
           "type": "address"
         }
       ],
@@ -436,8 +408,13 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "treasury",
+          "type": "address"
+        },
+        {
           "internalType": "bytes32",
-          "name": "salt",
+          "name": "path",
           "type": "bytes32"
         }
       ],
@@ -473,6 +450,24 @@
           "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "feeBoard",
+      "outputs": [
+        {
+          "internalType": "address[10]",
+          "name": "tokens",
+          "type": "address[10]"
+        },
+        {
+          "internalType": "uint256[10]",
+          "name": "amts",
+          "type": "uint256[10]"
         }
       ],
       "stateMutability": "view",
@@ -566,67 +561,6 @@
           "type": "address"
         },
         {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "path",
-          "type": "bytes32"
-        }
-      ],
-      "name": "gettokenreceived",
-      "outputs": [
-        {
-          "components": [
-            {
-              "internalType": "bytes32",
-              "name": "path",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "address",
-              "name": "token",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "balance",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "paid_total",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "received",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct GetWalletAddress.s_accountreceived",
-          "name": "info",
-          "type": "tuple"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "treasury",
-          "type": "address"
-        },
-        {
           "components": [
             {
               "internalType": "address",
@@ -639,7 +573,7 @@
               "type": "bytes32[]"
             }
           ],
-          "internalType": "struct GetWalletAddress.s_getbalanceinput[]",
+          "internalType": "struct channel_read.s_getbalanceinput[]",
           "name": "getbalanceinputs",
           "type": "tuple[]"
         }
@@ -681,7 +615,7 @@
                   "type": "uint256"
                 }
               ],
-              "internalType": "struct GetWalletAddress.s_accountreceived[]",
+              "internalType": "struct channel_read.s_accountreceived[]",
               "name": "accountinfos",
               "type": "tuple[]"
             },
@@ -691,7 +625,7 @@
               "type": "uint256"
             }
           ],
-          "internalType": "struct GetWalletAddress.s_token_accountreceived[]",
+          "internalType": "struct channel_read.s_token_accountreceived[]",
           "name": "token_receiveds",
           "type": "tuple[]"
         }
@@ -811,12 +745,12 @@
                   "type": "bytes32[]"
                 }
               ],
-              "internalType": "struct Collect_all.s_tokentask[]",
+              "internalType": "struct collect_writer.s_tokentask[]",
               "name": "tokentasks",
               "type": "tuple[]"
             }
           ],
-          "internalType": "struct Collect_all.s_imputationinfo",
+          "internalType": "struct collect_writer.s_imputationinfo",
           "name": "imputationinfo",
           "type": "tuple"
         }
@@ -836,108 +770,27 @@
               "type": "address"
             },
             {
-              "components": [
-                {
-                  "internalType": "address",
-                  "name": "token",
-                  "type": "address"
-                },
-                {
-                  "internalType": "bytes32[]",
-                  "name": "paths",
-                  "type": "bytes32[]"
-                }
-              ],
-              "internalType": "struct Collect_all.s_tokentask[]",
-              "name": "tokentasks",
-              "type": "tuple[]"
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes32[]",
+              "name": "paths",
+              "type": "bytes32[]"
+            },
+            {
+              "internalType": "address",
+              "name": "customRouter",
+              "type": "address"
             }
           ],
-          "internalType": "struct Collect_all.s_imputationinfo",
-          "name": "imputationinfo",
+          "internalType": "struct collect_writer.s_collecttask",
+          "name": "task",
           "type": "tuple"
-        },
-        {
-          "internalType": "contract IUniswapV2Router",
-          "name": "customRouter",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "minOutETH",
-          "type": "uint256"
-        }
-      ],
-      "name": "imputationall_and_swap",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "treasury",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes32[]",
-          "name": "paths",
-          "type": "bytes32[]"
-        },
-        {
-          "internalType": "contract IERC20",
-          "name": "token",
-          "type": "address"
-        }
-      ],
-      "name": "imputationstoken_by_other",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "treasury",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes32[]",
-          "name": "paths",
-          "type": "bytes32[]"
-        },
-        {
-          "internalType": "contract IERC20",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "internalType": "contract IUniswapV2Router",
-          "name": "customRouter",
-          "type": "address"
         }
       ],
       "name": "imputationstoken_by_other_withgas",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32[]",
-          "name": "paths",
-          "type": "bytes32[]"
-        },
-        {
-          "internalType": "contract IERC20",
-          "name": "token",
-          "type": "address"
-        }
-      ],
-      "name": "imputationstoken_by_treasury",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -976,6 +829,25 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "bytes4",
+          "name": "sel",
+          "type": "bytes4"
+        }
+      ],
+      "name": "logicOf",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "long_system_log",
       "outputs": [
@@ -983,6 +855,25 @@
           "internalType": "contract ILongSystemLogWrite",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "ownerFeeLedger",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -1022,6 +913,19 @@
     {
       "inputs": [
         {
+          "internalType": "address[]",
+          "name": "tokens",
+          "type": "address[]"
+        }
+      ],
+      "name": "rescueTokens",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "bytes32",
           "name": "role",
           "type": "bytes32"
@@ -1033,6 +937,37 @@
         }
       ],
       "name": "revokeRole",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "logic",
+          "type": "address"
+        }
+      ],
+      "name": "setLogic",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes4[]",
+          "name": "sels",
+          "type": "bytes4[]"
+        },
+        {
+          "internalType": "address",
+          "name": "logic",
+          "type": "address"
+        }
+      ],
+      "name": "setSelector",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1141,39 +1076,39 @@
     },
     {
       "inputs": [],
-      "name": "sweep",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
       "name": "systeminfo",
       "outputs": [
         {
-          "internalType": "uint64",
-          "name": "owner_fee",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint64",
-          "name": "affiliate_fee",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint64",
-          "name": "helper_fee",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint64",
-          "name": "gas_price_reward",
-          "type": "uint64"
-        },
-        {
-          "internalType": "contract IUniswapV2Router",
-          "name": "router",
-          "type": "address"
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "owner_fee",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "affiliate_fee",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "helper_fee",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "gas_price_reward",
+              "type": "uint64"
+            },
+            {
+              "internalType": "contract IUniswapV2Router",
+              "name": "router",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct m_storage.s_systeminfo",
+          "name": "",
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",
@@ -1183,36 +1118,17 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "",
+          "name": "treasury",
           "type": "address"
         }
       ],
-      "name": "treasury_counters",
+      "name": "treasuryView",
       "outputs": [
-        {
-          "internalType": "uint32",
-          "name": "collect_count",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint32",
-          "name": "paid_count",
-          "type": "uint32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
         {
           "internalType": "address",
-          "name": "",
+          "name": "indiv_logic",
           "type": "address"
-        }
-      ],
-      "name": "treasury_settings",
-      "outputs": [
+        },
         {
           "internalType": "address",
           "name": "affiliate",
@@ -1234,9 +1150,75 @@
           "type": "bool"
         },
         {
+          "internalType": "bool",
+          "name": "ac_full_effective",
+          "type": "bool"
+        },
+        {
           "internalType": "address",
           "name": "collect_auth",
           "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "fee_exempt",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint32",
+          "name": "collect_count",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "paid_count",
+          "type": "uint32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "treasury",
+          "type": "address"
+        }
+      ],
+      "name": "treasury_settings",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "affiliate",
+              "type": "address"
+            },
+            {
+              "internalType": "uint64",
+              "name": "bind_time",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bool",
+              "name": "event_switch",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "ac_full",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "collect_auth",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct m_storage.s_treasury_settings",
+          "name": "",
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",
@@ -1269,32 +1251,28 @@
         }
       ],
       "name": "upgradeToAndCall",
-      "outputs": [],
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
       "stateMutability": "payable",
       "type": "function"
     },
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
+          "internalType": "address[]",
+          "name": "tokens",
+          "type": "address[]"
         }
       ],
-      "name": "wallet_treasury",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
+      "name": "withdrawFees",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
-    },
-    {
-      "stateMutability": "payable",
-      "type": "receive"
     }
   ],
   "token": [

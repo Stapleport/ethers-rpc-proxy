@@ -16,10 +16,10 @@
   {
     "chainId": 78753,
     "name": "stapleport",
-    "shortName": "stpl",
+    "shortName": "stapleport",
     "nativeCurrency": {
-      "name": "Stapleport",
-      "symbol": "STPL",
+      "name": "Stapleport USD",
+      "symbol": "SPUSD",
       "decimals": 18
     },
     "rpc": [

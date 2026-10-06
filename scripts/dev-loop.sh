@@ -29,7 +29,7 @@ changed() {
 }
 
 while true; do
-    npx wrangler dev &
+    npx wrangler dev --port 8791 --inspector-port 9251 &
     WRANGLER_PID=$!
     # 监视 wrangler：进程死了或文件变了都跳出内层循环 → 重启
     while kill -0 "$WRANGLER_PID" 2>/dev/null; do

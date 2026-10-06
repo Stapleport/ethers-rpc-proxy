@@ -8,9 +8,9 @@ A read-only multi-chain EVM proxy running on Cloudflare Workers free tier: unifi
 
 It never broadcasts transactions and never touches private keys — signing and broadcasting always happen in the client-side wallet. It is a specialized read gateway that makes "web2 frontend reads blockchain directly" fast, free, and safe.
 
-![Demo: npm install → wrangler deploy → query USDC balance](docs/demo.gif)
+![Demo: pnpm install → wrangler deploy → query USDC balance](docs/demo.gif)
 
-*From `npm install` to a live deployment and an on-chain USDC balance query in ~20 seconds (sped up). Live demo: <https://ethers-rpc-proxy.kflc.workers.dev>*
+*From `pnpm install` to a live deployment and an on-chain USDC balance query in ~20 seconds (sped up). Live demo: <https://ethers-rpc-proxy.kflc.workers.dev>*
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Stapleport/ethers-rpc-proxy)
 
@@ -34,15 +34,15 @@ It never broadcasts transactions and never touches private keys — signing and 
 ### Quick Start
 
 ```bash
-npm install
-npm run dev        # local dev at http://127.0.0.1:8787
+pnpm install
+pnpm run dev        # local dev at http://127.0.0.1:8791
 ```
 
 Deploy to Cloudflare:
 
 ```bash
 npx wrangler login   # first time only
-npm run deploy
+pnpm run deploy
 ```
 
 You get a URL like `https://ethers-rpc-proxy.<your-subdomain>.workers.dev`. The landing page at `/` is served by Workers Assets (`public/index.html`) with an interactive playground.
@@ -122,7 +122,7 @@ Read methods are whitelisted (`eth_call`, `eth_getLogs`, `eth_getBalance`, `eth_
 | 59144 | Linea | | |
 | 534352 | Scroll | | |
 
-See `GET /api/chains` for the full list including endpoints. To add/remove chains, edit `MAINNETS`/`TESTNETS` in `scripts/trim-rpcs.mjs` and run `npm run trim-rpcs`.
+See `GET /api/chains` for the full list including endpoints. To add/remove chains, edit `MAINNETS`/`TESTNETS` in `scripts/trim-rpcs.mjs` and run `pnpm run trim-rpcs`.
 
 ### Custom Chains & Custom Upstream RPC
 
@@ -203,14 +203,16 @@ const res2 = await fetch('https://<your-worker>/api/call?chain=1&contract=usdc&f
 ### Maintenance
 
 ```bash
-npm run trim-rpcs   # rebuild chain whitelist after editing MAINNETS/TESTNETS
-npm run sync-abi    # rebuild lib/abi.json (after contract changes or adding standard ABIs)
-npm run check-abi   # CI check: exits 1 if abi.json is stale
+pnpm run trim-rpcs   # rebuild chain whitelist after editing MAINNETS/TESTNETS
+pnpm run sync-abi    # rebuild lib/abi.json (after contract changes or adding standard ABIs)
+pnpm run check-abi   # CI check: exits 1 if abi.json is stale
 ```
 
-To add a standard contract (e.g. ERC721A), drop `erc721a.json` into `scripts/standard-abis/` and rerun `npm run sync-abi`. To add a hardhat contract, add a row to the `CONTRACTS` map in `scripts/sync-abi.mjs`.
+To add a standard contract (e.g. ERC721A), drop `erc721a.json` into `scripts/standard-abis/` and rerun `pnpm run sync-abi`. To add a hardhat contract, add a row to the `CONTRACTS` map in `scripts/sync-abi.mjs`.
 
 **Failover strategy** — no pre-flight health checks (they waste subrequests and latency): nodes are tried in order; network errors / rate limits / 5xx / empty `eth_call` results switch to the next node, business errors (revert, invalid params) return immediately. A total failover budget of 15s caps the worst case (later nodes get shrinking timeouts); exhausting it yields 504. All nodes failing yields 502.
+
+**ENS silent-resolution pitfall** — the contract-read surface accepts ENS names as `target`, so a non-`0x` string (typo, symbol, unprefixed address) is silently treated as an ENS name: resolution burns subrequests, returns empty data, and downstream decoding throws `BUFFER_OVERRUN`. Callers invoking `handleContractCall` directly (scripts/tests) must pass a `0x` address — ENS-by-name is for the public HTTP surface only (`rpcHandler.js` hard-rejects non-`0x` there).
 
 ### Free-tier Notes
 
@@ -226,9 +228,9 @@ To add a standard contract (e.g. ERC721A), drop `erc721a.json` into `scripts/sta
 
 部署在 Cloudflare Workers 免费版上的只读多链 EVM 中转服务：统一 RPC 接口 + 按 ABI 解码的合约读调用 + 常用合约地址簿。
 
-![演示：npm install → wrangler deploy → 查询 USDC 余额](docs/demo.gif)
+![演示：pnpm install → wrangler deploy → 查询 USDC 余额](docs/demo.gif)
 
-*从 `npm install` 到部署上线、查到链上 USDC 余额，全程约 20 秒（已加速）。在线演示：<https://ethers-rpc-proxy.kflc.workers.dev>*
+*从 `pnpm install` 到部署上线、查到链上 USDC 余额，全程约 20 秒（已加速）。在线演示：<https://ethers-rpc-proxy.kflc.workers.dev>*
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Stapleport/ethers-rpc-proxy)
 
@@ -246,15 +248,15 @@ To add a standard contract (e.g. ERC721A), drop `erc721a.json` into `scripts/sta
 ### 快速开始
 
 ```bash
-npm install
-npm run dev        # 本地跑在 http://127.0.0.1:8787
+pnpm install
+pnpm run dev        # 本地跑在 http://127.0.0.1:8791
 ```
 
 部署到 Cloudflare：
 
 ```bash
 npx wrangler login   # 首次登录
-npm run deploy
+pnpm run deploy
 ```
 
 部署后形如 `https://ethers-rpc-proxy.<你的子域>.workers.dev`。落地页 `/` 由 Workers Assets 提供（`public/index.html`），带交互式调用演示。
@@ -334,7 +336,7 @@ curl 'https://<your-worker>/api/call?chain=bsc&contract=weth&fn=symbol'
 | 59144 | Linea | | |
 | 534352 | Scroll | | |
 
-完整清单（含每链 RPC 节点）见 `GET /api/chains`。要增删链：改 `scripts/trim-rpcs.mjs` 里的 `MAINNETS`/`TESTNETS` 白名单后重跑 `npm run trim-rpcs`。
+完整清单（含每链 RPC 节点）见 `GET /api/chains`。要增删链：改 `scripts/trim-rpcs.mjs` 里的 `MAINNETS`/`TESTNETS` 白名单后重跑 `pnpm run trim-rpcs`。
 
 ### 自定义链与自定义上游 RPC
 
@@ -415,14 +417,16 @@ const res2 = await fetch('https://<your-worker>/api/call?chain=1&contract=usdc&f
 ### 维护
 
 ```bash
-npm run trim-rpcs   # 改 MAINNETS/TESTNETS 后重建链白名单
-npm run sync-abi    # 重建 lib/abi.json（合约改动或增删标准 ABI 后）
-npm run check-abi   # CI 检查：abi.json 过期则退出码 1
+pnpm run trim-rpcs   # 改 MAINNETS/TESTNETS 后重建链白名单
+pnpm run sync-abi    # 重建 lib/abi.json（合约改动或增删标准 ABI 后）
+pnpm run check-abi   # CI 检查：abi.json 过期则退出码 1
 ```
 
-要加标准合约（如 ERC721A）：在 `scripts/standard-abis/` 放一个 `erc721a.json`，重跑 `npm run sync-abi`。要同步其他 hardhat 合约：在 `scripts/sync-abi.mjs` 的 `CONTRACTS` 表里加一行。
+要加标准合约（如 ERC721A）：在 `scripts/standard-abis/` 放一个 `erc721a.json`，重跑 `pnpm run sync-abi`。要同步其他 hardhat 合约：在 `scripts/sync-abi.mjs` 的 `CONTRACTS` 表里加一行。
 
 **Failover 策略** —— 不做前置健康检查（省子请求与延迟）：按 `rpcs.json` 顺序逐个节点请求，网络错误/限流/5xx/空 `eth_call` 结果自动切下一个；业务错误（revert、参数不合法）直接返回不换节点。failover 总预算 15s（后备节点超时随剩余预算递减），耗尽返回 504；所有节点失败返回 502。
+
+**ENS 静默解析坑** —— 合约读入口的 `target` 允许 ENS 域名：非 `0x` 串（手滑/符号/漏前缀地址）会被静默当 ENS 解析——白烧子请求、拿到空 data、下游解码抛 `BUFFER_OVERRUN`。直调 `handleContractCall`（脚本/测试）必须传 `0x` 地址——按名解析只属公网 HTTP 面（`rpcHandler.js` 内部对非 `0x` 硬拒）。
 
 ### 免费额度与限制
 
