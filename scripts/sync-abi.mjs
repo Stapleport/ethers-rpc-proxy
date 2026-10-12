@@ -11,9 +11,10 @@
  * hardhat 源目录可用环境变量 HARDHAT_ROOT 覆盖，默认取仓库隔壁的 Stapleport_hardhat。
  * 找不到 hardhat artifacts 时（如独立部署环境）自动跳过 artifacts 部分，不阻塞构建。
  */
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { syncGenerated } from '../../../scripts/lib/sync-generated-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ETHERS_NEXT_ROOT = path.resolve(__dirname, '..');
@@ -87,15 +88,16 @@ for (const c of changes) {
 }
 
 if (changed) {
-    if (checkOnly) {
-        console.error('[abi-sync] ABI 已过期：请在 ethers_next 目录运行 npm run sync-abi 后再构建');
-        process.exit(1);
-    }
     for (const c of changes) {
         if (!c.inSync) current[c.name] = c.freshAbi;
     }
-    writeFileSync(abiFile, JSON.stringify(current, null, 2) + '\n');
-    console.log(`[abi-sync] 已写入 ${path.relative(ETHERS_NEXT_ROOT, abiFile)}`);
+    syncGenerated({
+        destPath: abiFile,
+        next: JSON.stringify(current, null, 2) + '\n',
+        checkOnly,
+        checkFail: '[abi-sync] ABI 已过期：请在 ethers_next 目录运行 npm run sync-abi 后再构建',
+        onWrite: () => console.log(`[abi-sync] 已写入 ${path.relative(ETHERS_NEXT_ROOT, abiFile)}`),
+    });
 } else {
     console.log('[abi-sync] 全部一致，无需更新');
 }
