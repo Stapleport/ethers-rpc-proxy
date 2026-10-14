@@ -8,6 +8,7 @@
  */
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { clientKey, createRateLimiter, createShortCache, CACHEABLE_RPC_METHODS } from './limits.js';
 import {
     rpcConfig,
     pendingChains,
@@ -25,6 +26,28 @@ const app = new Hono();
 
 // 只读公共服务，放开跨域；要收紧可改成白名单 origins
 app.use('*', cors());
+
+// IP 限速（审计 06 档 F-016）：60 次/分钟/客户端，超限 429。内存态（isolate 级，
+// 见 src/limits.js 头注）。OPTIONS 预检不计额度（浏览器预检缓存 86400s，不构成蹭用面）。
+const rateLimiter = createRateLimiter({ limit: 60, windowMs: 60_000 });
+
+app.use('*', async (c, next) => {
+    if (c.req.method === 'OPTIONS') return next();
+    const verdict = rateLimiter.check(clientKey(c.req.raw));
+    c.header('X-RateLimit-Limit', '60');
+    c.header('X-RateLimit-Remaining', String(verdict.remaining));
+    if (!verdict.allowed) {
+        c.header('Retry-After', String(verdict.retryAfter));
+        return c.json(
+            { success: false, error: 'Rate limit exceeded: 60 requests per minute per client. Retry later.' },
+            429
+        );
+    }
+    return next();
+});
+
+// 短缓存（审计 06 档 F-016）：无参数热点只读方法 5s 内复用，降低上游调用与 Workers 时长。
+const rpcCache = createShortCache({ ttlMs: 5000 });
 
 const methodNotAllowed = (c) => c.json({ success: false, error: 'Method not allowed' }, 405);
 
@@ -211,8 +234,25 @@ post('/api/rpc', async (c) => {
     if (rpc && !customRpcAllowed(c.env)) {
         return c.json({ success: false, error: CUSTOM_RPC_DISABLED }, 403);
     }
+    // 热点短缓存（F-016）：仅「无参数且方法在热榜内」的请求缓存 5s；键含链选择器防跨链
+    // 串值；带请求级自定义上游 rpc 的一律不缓存（请求级 URL 不可做稳定键）。
+    const cacheable =
+        CACHEABLE_RPC_METHODS.has(request?.method) &&
+        Array.isArray(request.params) &&
+        request.params.length === 0 &&
+        !rpc;
+    const cacheKey = cacheable ? `${chainId ?? ''}|${request.method}` : null;
+    if (cacheKey) {
+        const cached = rpcCache.get(cacheKey);
+        if (cached !== undefined) {
+            c.header('X-Proxy-Cache', 'HIT');
+            return c.json({ success: true, result: cached });
+        }
+    }
     try {
         const result = await handleRpcRequest(request, chainId, { customRpcUrl: rpc });
+        if (cacheKey) rpcCache.set(cacheKey, result);
+        c.header('X-Proxy-Cache', cacheKey ? 'MISS' : 'BYPASS');
         return c.json({ success: true, result });
     } catch (error) {
         console.error('RPC request error:', error.message);
