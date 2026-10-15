@@ -183,8 +183,8 @@ test('imputations address book entry resolves per-chain without wildcard fallbac
     const local = resolveContractAddress(31337, 'imputations');
     assert.match(local.address, /^0x[0-9a-fA-F]{40}$/);
     // 已配置链精确解析；未配置的链不能误回退到别的链地址
-    // 78753 的 Imputations 部署已不存在（失实记录已清），不再精确解析、也不回退到别链地址
-    assert.equal(resolveContractAddress(78753, 'imputations'), null);
+    // 31338 未在本代理地址簿登记（本地稳态链仅 31339 面），不精确解析、也不回退到别链地址
+    assert.equal(resolveContractAddress(31338, 'imputations'), null);
     assert.equal(resolveContractAddress(56, 'imputations'), null);
     assert.equal(resolveContractAddress(137, 'imputations'), null);
 });

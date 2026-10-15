@@ -12,20 +12,5 @@
         "url": "http://127.0.0.1:8545"
       }
     ]
-  },
-  {
-    "chainId": 78753,
-    "name": "stapleport",
-    "shortName": "stapleport",
-    "nativeCurrency": {
-      "name": "Stapleport USD",
-      "symbol": "SPUSD",
-      "decimals": 18
-    },
-    "rpc": [
-      {
-        "url": "https://rpc.stapleport.com"
-      }
-    ]
   }
 ]
