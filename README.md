@@ -1,3 +1,7 @@
+---
+id: frontend.rpc-proxy
+---
+
 # Ethers RPC Proxy
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Stapleport/ethers-rpc-proxy)

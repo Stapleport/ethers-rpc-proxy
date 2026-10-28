@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @archived: superseded by scripts/gen-abi.mjs — kept for rollback/lookup only
 /**
  * 同步合约 ABI 到 lib/abi.json，两类来源：
  *   1. hardhat 编译产物（Stapleport_hardhat/artifacts，跟链上部署版本走）

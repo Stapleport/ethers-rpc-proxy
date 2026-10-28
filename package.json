@@ -7,7 +7,8 @@
         "dev:once": "wrangler dev",
         "deploy": "wrangler deploy",
         "sync-abi": "node scripts/sync-abi.mjs",
-        "check-abi": "node scripts/sync-abi.mjs --check",
+        "gen-abi": "node scripts/gen-abi.mjs",
+        "check-abi": "node scripts/gen-abi.mjs --check",
         "trim-rpcs": "node scripts/trim-rpcs.mjs",
         "test": "node --test test/read-only.test.mjs"
     },
