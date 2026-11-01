@@ -84,6 +84,68 @@
         {
           "indexed": true,
           "internalType": "address",
+          "name": "caller",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "ok",
+          "type": "bool"
+        }
+      ],
+      "name": "ExchangeCallerSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "treasury",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "diffBal",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "helperAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "ownerAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "ethAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "ExchangeCollect",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
           "name": "token",
           "type": "address"
         },
@@ -853,6 +915,61 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "treasury",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes32[]",
+              "name": "paths",
+              "type": "bytes32[]"
+            },
+            {
+              "internalType": "address",
+              "name": "customRouter",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "helperAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "minOut",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "deadline",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address[]",
+              "name": "swapPath",
+              "type": "address[]"
+            }
+          ],
+          "internalType": "struct collect_writer.s_exchangetask",
+          "name": "task",
+          "type": "tuple"
+        }
+      ],
+      "name": "imputationstoken_by_other_withgas_exchange",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "initialize",
       "outputs": [],
@@ -912,6 +1029,153 @@
           "internalType": "contract ILongSystemLogWrite",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "manageSnapshot",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "owner_fee",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "affiliate_fee",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "helper_fee",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "gas_price_reward",
+              "type": "uint64"
+            },
+            {
+              "internalType": "address",
+              "name": "router",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "collectFeeTotal",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "autoCollectMaster",
+              "type": "bool"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "roleAdmin",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "roleManage",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "roleUpgrader",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bool",
+              "name": "hasAdmin",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "hasManage",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "hasUpgrader",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct m_read.ManageSnapshot",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "erc20s",
+          "type": "address[]"
+        }
+      ],
+      "name": "opsSnapshot",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address[10]",
+              "name": "boardTokens",
+              "type": "address[10]"
+            },
+            {
+              "internalType": "uint256[10]",
+              "name": "boardAmts",
+              "type": "uint256[10]"
+            },
+            {
+              "internalType": "uint256[10]",
+              "name": "seatLedgers",
+              "type": "uint256[10]"
+            },
+            {
+              "internalType": "uint256[10]",
+              "name": "seatDecimals",
+              "type": "uint256[10]"
+            },
+            {
+              "internalType": "address",
+              "name": "collectOwner",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "catBals",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "catDecimals",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct m_read.OpsSnapshot",
+          "name": "",
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",
@@ -1121,6 +1385,24 @@
         }
       ],
       "name": "set_collect_event_switch",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "caller",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "ok",
+          "type": "bool"
+        }
+      ],
+      "name": "set_exchange_caller",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
