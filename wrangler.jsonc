@@ -3,6 +3,14 @@
     "name": "ethers-rpc-proxy",
     "main": "src/worker.js",
     "compatibility_date": "2026-08-01",
+    // 生产自定义域（2026-10-30 挂）：走 stapleport.com 区=吃 zone 级 IP Access Rules 边缘
+    // 封禁（cf-ipban.mjs）。workers.dev 腿显式保留（5 前端 apienv 仍指它；不显式写=true
+    // 时挂 routes 的部署会默认关腿，2026-10-30 实测踩过）——待 5 前端全部重部署切到
+    // worker-rpc 后再改 false 关腿。
+    "workers_dev": true,
+    "routes": [
+        { "pattern": "worker-rpc.stapleport.com", "custom_domain": true }
+    ],
     "vars": {
         // 请求级自定义上游 RPC（POST /api/rpc、/api/contract/call、GET /api/call 的 rpc 参数）。
         // 2026-09-13 公共实例已开 "true"（用户决定，此前控制台手改，落仓防下次 deploy 被悄悄

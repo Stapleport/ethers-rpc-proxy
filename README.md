@@ -14,7 +14,7 @@ It never broadcasts transactions and never touches private keys — signing and 
 
 ![Demo: pnpm install → wrangler deploy → query USDC balance](docs/demo.gif)
 
-*From `pnpm install` to a live deployment and an on-chain USDC balance query in ~20 seconds (sped up). Live demo: <https://ethers-rpc-proxy.kflc.workers.dev>*
+*From `pnpm install` to a live deployment and an on-chain USDC balance query in ~20 seconds (sped up). Live demo: <https://worker-rpc.stapleport.com>*
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Stapleport/ethers-rpc-proxy)
 
@@ -234,7 +234,7 @@ To add a standard contract (e.g. ERC721A), drop `erc721a.json` into `scripts/sta
 
 ![演示：pnpm install → wrangler deploy → 查询 USDC 余额](docs/demo.gif)
 
-*从 `pnpm install` 到部署上线、查到链上 USDC 余额，全程约 20 秒（已加速）。在线演示：<https://ethers-rpc-proxy.kflc.workers.dev>*
+*从 `pnpm install` 到部署上线、查到链上 USDC 余额，全程约 20 秒（已加速）。在线演示：<https://worker-rpc.stapleport.com>*
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Stapleport/ethers-rpc-proxy)
 
