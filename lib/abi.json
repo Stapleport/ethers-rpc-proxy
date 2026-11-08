@@ -970,7 +970,48 @@
       "type": "function"
     },
     {
-      "inputs": [],
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "router",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_logadd",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "readLogic_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "collectLogic_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "channelLogic_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "accountLogic_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "feesLogic_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "batchLogic_",
+          "type": "address"
+        }
+      ],
       "name": "initialize",
       "outputs": [],
       "stateMutability": "nonpayable",

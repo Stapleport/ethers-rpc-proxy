@@ -4,6 +4,8 @@ id: frontend.rpc-proxy
 
 # Ethers RPC Proxy
 
+> 跨仓联动：先查 [../../docs/project/linkages/README.md](../../docs/project/linkages/README.md "ref:general.linkages")
+
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Stapleport/ethers-rpc-proxy)
 
 **[English](#english) | [中文](#中文)**
