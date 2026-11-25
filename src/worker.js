@@ -1,11 +1,3 @@
-/**
- * Cloudflare Worker 入口（Hono）
- *
- * 路由与原 Next.js 版完全一致，响应结构不变（{success, ...} 信封），
- * 另外补齐两件事：
- * - CORS：浏览器前端跨域直连
- * - 状态码：404 链/合约不存在、403 写操作或方法不在白名单、502 上游全挂
- */
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { clientKey, createRateLimiter, createShortCache, CACHEABLE_RPC_METHODS } from './limits.js';
@@ -24,11 +16,8 @@ import {
 
 const app = new Hono();
 
-// 只读公共服务，放开跨域；要收紧可改成白名单 origins
 app.use('*', cors());
 
-// IP 限速（审计 06 档 F-016）：60 次/分钟/客户端，超限 429。内存态（isolate 级，
-// 见 src/limits.js 头注）。OPTIONS 预检不计额度（浏览器预检缓存 86400s，不构成蹭用面）。
 const rateLimiter = createRateLimiter({ limit: 60, windowMs: 60_000 });
 
 app.use('*', async (c, next) => {
@@ -46,13 +35,10 @@ app.use('*', async (c, next) => {
     return next();
 });
 
-// 短缓存（审计 06 档 F-016）：无参数热点只读方法 5s 内复用，降低上游调用与 Workers 时长。
 const rpcCache = createShortCache({ ttlMs: 5000 });
 
 const methodNotAllowed = (c) => c.json({ success: false, error: 'Method not allowed' }, 405);
 
-// 兜底：未捕获异常默认 500 纯文本会绕过 cors 中间件（浏览器报成 CORS 错误），
-// 这里统一 JSON 信封并手动带上 ACAO，保证任何错误响应前端都能读到 error 文案
 app.onError((err, c) => {
     console.error('Unhandled error:', err?.message || err);
     return c.json(
@@ -62,12 +48,8 @@ app.onError((err, c) => {
     );
 });
 
-// 静态元数据接口：浏览器缓存 5 分钟，CDN/边缘可缓存 1 小时（内容随部署更新）
 const STATIC_CACHE = 'public, max-age=300, s-maxage=3600';
 
-// 请求级自定义上游 RPC（POST /api/rpc、/api/contract/call、GET /api/call 的 rpc 参数）
-// 的实例级开关：公开实例保持关闭防滥用（不被当开放代理）；自建部署在 wrangler.jsonc
-// 的 vars 里设 true 放开——任何 EVM 链填上 RPC 即可只读对接
 function customRpcAllowed(env) {
     const v = env?.ALLOW_CUSTOM_RPC;
     return v === true || String(v).toLowerCase() === 'true' || String(v) === '1';
@@ -75,7 +57,6 @@ function customRpcAllowed(env) {
 const CUSTOM_RPC_DISABLED =
     'Custom upstream rpc is disabled on this instance: self-deploy and set ALLOW_CUSTOM_RPC=true (wrangler vars) to enable it.';
 
-// 注册路由并给错误方法返回 405（Hono 默认是 404）
 function get(path, handler) {
     app.get(path, handler);
     app.on(['POST', 'PUT', 'PATCH', 'DELETE'], path, methodNotAllowed);
@@ -97,8 +78,6 @@ get('/api/chains', (c) => {
     c.header('Cache-Control', STATIC_CACHE);
     return c.json({
         success: true,
-        // 只填 rpc 的 overlay 条目（chainId 惰性从上游读）以 chainId: null 列出，
-        // 命中一次后（按名称或 rpc 参数）自动补全
         chains: [...rpcConfig, ...pendingChains].map((chain) => ({
             chainId: chain.chainId ?? null,
             name: chain.name,
@@ -119,7 +98,6 @@ get('/api/contracts', (c) => {
 
 get('/api/addresses', (c) => {
     c.header('Cache-Control', STATIC_CACHE);
-    // chainId 参数同样接受链名/别名（与调用端点口径一致）；解析不了按该链未配置处理
     const chainIdParam = c.req.query('chainId');
     const key = chainIdParam ? String(parseChainRef(chainIdParam)) : null;
     return c.json({
@@ -139,23 +117,18 @@ get('/api/addresses', (c) => {
     });
 });
 
-// GET 版合约读调用：/api/call?chain=1&contract=usdc&fn=balanceOf&p=0x…
-// 与 POST /api/contract/call 同一套只读管线（地址簿、ABI、failover），
-// 参数用重复的 p 传入并按顺序对应函数入参，方便分享链接和浏览器直接打开。
 get('/api/call', async (c) => {
     const chain = c.req.query('chain');
     const customRpc = c.req.query('rpc');
     const contract = c.req.query('contract');
     const fn = c.req.query('fn');
     const params = c.req.queries('p') || [];
-    // chain（id 或名称）与 rpc 至少给一个：只有 rpc 时 chainId 从上游 eth_chainId 读
     if (!contract || !fn || (!chain && !customRpc)) {
         return c.json(
             { success: false, error: 'Missing required query parameters: chain (or rpc), contract, fn (params via repeated p=)' },
             400
         );
     }
-    // 自定义上游（可选 &rpc=，实例开关放行后生效）：chain 可为白名单外的任意链 ID
     if (customRpc && !customRpcAllowed(c.env)) {
         return c.json({ success: false, error: CUSTOM_RPC_DISABLED }, 403);
     }
@@ -169,8 +142,6 @@ get('/api/call', async (c) => {
     }
     const chainIdNum = chainCfg.chainId;
 
-    // 参数做了简单类型推断：true/false/JSON 数组自动转换；纯数字刻意保持字符串——
-    // 超大数走 JSON.parse 会丢精度，字符串交给 ethers/bigint 才安全
     const typed = params.map((p) => {
         if (/^-?\d+$/.test(p)) return p;
         if (p === 'true') return true;
@@ -221,7 +192,6 @@ get('/api/contracts/:contractName/functions', (c) => {
 
 post('/api/rpc', async (c) => {
     const { chainId, request, rpc } = await c.req.json().catch(() => ({}));
-    // request 必填；chainId（数字或链名）与 rpc 至少给一个——只有 rpc 时 chainId 从上游读
     if (!request || (!chainId && !rpc)) {
         return c.json(
             {
@@ -234,8 +204,6 @@ post('/api/rpc', async (c) => {
     if (rpc && !customRpcAllowed(c.env)) {
         return c.json({ success: false, error: CUSTOM_RPC_DISABLED }, 403);
     }
-    // 热点短缓存（F-016）：仅「无参数且方法在热榜内」的请求缓存 5s；键含链选择器防跨链
-    // 串值；带请求级自定义上游 rpc 的一律不缓存（请求级 URL 不可做稳定键）。
     const cacheable =
         CACHEABLE_RPC_METHODS.has(request?.method) &&
         Array.isArray(request.params) &&
@@ -268,8 +236,6 @@ post('/api/contract/call', async (c) => {
     if (!Array.isArray(params)) {
         return c.json({ success: false, error: 'params must be an array' }, 400);
     }
-    // 请求级自定义 ABI（数组或单条 fragment）：带 abi 时无需 contractName，
-    // 只读门禁照常生效（view/pure 之外一律 403）
     if (abi !== undefined && !Array.isArray(abi)) {
         return c.json({ success: false, error: 'abi must be an array of ABI fragments' }, 400);
     }
@@ -284,9 +250,6 @@ post('/api/contract/call', async (c) => {
         return c.json({ success: false, error: CUSTOM_RPC_DISABLED }, 403);
     }
 
-    // 先把链解析成数字 id 再查地址簿：chainId 允许传链名/别名，直接拿原始值查地址簿
-    // 会 NaN 落空（GET /api/call 一直是先 lookup 再 resolve，这里对齐；lookupChain
-    // 对 pending 链/自定义 rpc 的结果有缓存，handleContractCall 内的再次调用零成本）
     let chainCfg;
     try {
         chainCfg = await lookupChain(chainId, rpc);
@@ -295,8 +258,6 @@ post('/api/contract/call', async (c) => {
         return c.json({ success: false, error: error.message }, error.status || 500);
     }
 
-    // contractAddress 可以是地址簿名称（如 "multicall3"）；此时 contractName 可省略，
-    // 由地址簿条目里的 abi 字段补上
     const resolved = resolveContractAddress(chainCfg.chainId, contractAddress);
     if (!resolved) {
         return c.json(

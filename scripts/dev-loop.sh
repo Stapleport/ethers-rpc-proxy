@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-# wrangler 4.x 的热重载有两档毛病：有时整个进程退出，有时进程活着但 worker 假死。
-# 这里干脆不用它的热更新：自己轮询源码目录，检测到文件变化就杀掉 wrangler 干净重启。
-# 效果：改代码后 1~2 秒内服务恢复最新版本，浏览器刷新即可。
-# 退出：Ctrl+C（会杀掉 wrangler 及其 workerd 子进程）。
 set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 MARKER="$(mktemp)"
@@ -10,8 +6,6 @@ WRANGLER_PID=""
 trap 'kill "$WRANGLER_PID" 2>/dev/null; pkill -P "$WRANGLER_PID" 2>/dev/null; rm -f "$MARKER"; exit 0' INT TERM
 touch "$MARKER"
 
-# wrangler 自己也监听 public/ 并触发热重载（会假死），所以 public 也要监控：
-# 一旦页面有改动，同样走"杀掉重启"的干净路径，不给 wrangler 自己 reload 的机会
 watch_paths=("$ROOT/src" "$ROOT/lib" "$ROOT/public" "$ROOT/wrangler.jsonc")
 
 changed() {
@@ -31,7 +25,6 @@ changed() {
 while true; do
     npx wrangler dev --port ${PORT:-8791} --inspector-port ${INSPECTOR_PORT:-9235} &
     WRANGLER_PID=$!
-    # 监视 wrangler：进程死了或文件变了都跳出内层循环 → 重启
     while kill -0 "$WRANGLER_PID" 2>/dev/null; do
         if changed; then
             touch "$MARKER"

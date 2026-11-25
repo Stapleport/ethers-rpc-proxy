@@ -1,17 +1,4 @@
 #!/usr/bin/env node
-// @archived: superseded by scripts/gen-abi.mjs — kept for rollback/lookup only
-/**
- * 同步合约 ABI 到 lib/abi.json，两类来源：
- *   1. hardhat 编译产物（Stapleport_hardhat/artifacts，跟链上部署版本走）
- *   2. scripts/standard-abis/*.json（人工维护的标准合约接口：ERC721/ERC1155 等）
- *
- * 用法（都在 ethers_next 目录执行）：
- *   npm run sync-abi   # 同步并写入 lib/abi.json，打印函数增删差异
- *   npm run check-abi  # 只校验是否同步（构建前检查），不一致时退出码 1
- *
- * hardhat 源目录可用环境变量 HARDHAT_ROOT 覆盖，默认取仓库隔壁的 Stapleport_hardhat。
- * 找不到 hardhat artifacts 时（如独立部署环境）自动跳过 artifacts 部分，不阻塞构建。
- */
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,7 +11,6 @@ const HARDHAT_ROOT = path.resolve(
 );
 const STANDARD_ABI_DIR = path.join(__dirname, 'standard-abis');
 
-// 合约名 → artifacts 内的相对路径（以后要同步别的合约在这里加一行）
 const CONTRACTS = {
     Imputations: 'contracts/Imputation/Imputations.sol/Imputations.json',
 };
@@ -67,7 +53,6 @@ if (hasHardhatArtifacts) {
     }
 }
 
-// 标准合约接口：文件名即 lib/abi.json 里的键名，源文件永远是最新版
 if (existsSync(STANDARD_ABI_DIR)) {
     for (const file of readdirSync(STANDARD_ABI_DIR).filter((f) => f.endsWith('.json')).sort()) {
         const name = path.basename(file, '.json');

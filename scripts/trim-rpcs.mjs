@@ -1,15 +1,4 @@
 #!/usr/bin/env node
-/**
- * 把 chainlist 全量数据裁剪成部署白名单（Cloudflare Workers 免费版有脚本体积和
- * 每请求 10ms CPU 限制，2MB/2317 链的全量 JSON 打进 bundle 会拖垮冷启动）。
- *
- * 用法（在 ethers_next 目录执行）：
- *   node scripts/trim-rpcs.mjs                # 裁剪 lib/rpcs.json
- *   node scripts/trim-rpcs.mjs --input xx.json # 从别的 chainlist 全量文件裁
- *
- * 数据来源：https://chainlist.network 的 chainlist 导出（chainId 为准）。
- * 要加链：在 MAINNETS/TESTNETS 里补 chainId，重跑本脚本。
- */
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,36 +6,33 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
-// 常用主网（收款场景优先 BSC/ETH，其余为用户常用 L1/L2）
 const MAINNETS = [
-    1, // Ethereum
-    10, // Optimism
-    25, // Cronos
-    56, // BNB Smart Chain
-    100, // Gnosis
-    137, // Polygon
-    204, // opBNB
-    250, // Fantom
-    324, // zkSync Era
-    8453, // Base
-    42161, // Arbitrum One
-    43114, // Avalanche C-Chain
-    5000, // Mantle
-    59144, // Linea
-    534352, // Scroll
+    1,
+    10,
+    25,
+    56,
+    100,
+    137,
+    204,
+    250,
+    324,
+    8453,
+    42161,
+    43114,
+    5000,
+    59144,
+    534352,
 ];
-// 对应测试网
 const TESTNETS = [
-    97, // BSC Testnet
-    80002, // Polygon Amoy
-    84532, // Base Sepolia
-    421614, // Arbitrum Sepolia
-    11155111, // Ethereum Sepolia
-    11155420, // OP Sepolia
+    97,
+    80002,
+    84532,
+    421614,
+    11155111,
+    11155420,
 ];
 const WHITELIST = new Set([...MAINNETS, ...TESTNETS]);
 
-// 公共节点按质量排序的偏好（越靠前越优先作为 failover 首选）
 const RPC_PREFERENCE = [
     /bnbchain\.org|bsc-dataseed/i,
     /publicnode\.com/i,
@@ -76,7 +62,6 @@ for (const chainId of [...MAINNETS, ...TESTNETS]) {
         continue;
     }
 
-    // 只要 https 公共端点，去重，按偏好排序后截前 5 个做 failover 列表
     const seen = new Set();
     const urls = chain.rpc
         .map((r) => (typeof r === 'string' ? r : r.url))

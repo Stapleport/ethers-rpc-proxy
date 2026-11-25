@@ -1,10 +1,4 @@
 #!/usr/bin/env bash
-# Stapleport Stapleport_worker/ethers-rpc-proxy 双模式部署（CF Worker ethers-rpc-proxy，纯后端 worker 无前端 build 步骤）
-# worker 名出处：本仓 wrangler.jsonc name=ethers-rpc-proxy
-# 机制：dev = wrangler versions upload（只传版不切流量，版本 id 记 .deploy-pending）
-#       promote = 读 .deploy-pending 版本 id → wrangler versions deploy --version-id <id>（提升为生效，可回滚），完毕删记录
-#       禁用裸 wrangler deploy（跳确认门立即生效）。
-# 用法：./deploy.sh dev|promote；无参 = 打印本用法并 exit 1
 set -euo pipefail
 cd "$(dirname "$0")"
 MODE="${1:-}"
